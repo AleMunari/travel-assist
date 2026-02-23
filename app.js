@@ -244,12 +244,13 @@ function createDayCard(day, idx) {
   header.className = 'day-header';
   header.setAttribute('aria-expanded', 'false');
   header.setAttribute('aria-controls', 'body-' + day.id);
-  header.setAttribute('aria-label', formatDate(day.date));
+  header.setAttribute('aria-label', 'Giorno ' + (idx+1) + ': ' + formatDate(day.date));
   header.innerHTML = `
     <div class="day-header-left">
+      <span class="day-number">${String(idx+1).padStart(2,'0')}</span>
       <div class="day-info">
         <span class="day-date">${formatDate(day.date)}</span>
-        ${isToday(day.date) ? '<span class="day-label">📍 Oggi</span>' : ''}
+        <span class="day-label">${isToday(day.date) ? '📍 Oggi' : 'Giorno ' + (idx+1)}</span>
       </div>
     </div>
     <span class="day-toggle" aria-hidden="true">▼</span>
@@ -296,35 +297,37 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
   item.id = 'slot-' + day.id + '-' + slotIdx;
 
   item.innerHTML = `
-    <div class="slot-col">
-      <label class="slot-label" for="place-input-${dayIdx}-${slotIdx}">📍 Luogo</label>
-      <input type="text" class="slot-input" id="place-input-${dayIdx}-${slotIdx}"
-        value="${esc(slot.place || '')}"
-        placeholder="es. Colosseo, Torre Eiffel..."
-        aria-label="Luogo tappa ${slotIdx+1}"
-        autocomplete="off" />
+    <div class="slot-row">
+      <div class="slot-time">
+        <label class="sr-only" for="time-${day.id}-${slotIdx}">Orario</label>
+        <input type="time" class="slot-input" id="time-${day.id}-${slotIdx}"
+          value="${slot.time || ''}" aria-label="Orario tappa ${slotIdx+1}" />
+      </div>
+      <div class="slot-place">
+        <label class="sr-only" for="place-input-${dayIdx}-${slotIdx}">Luogo</label>
+        <input type="text" class="slot-input" id="place-input-${dayIdx}-${slotIdx}"
+          value="${esc(slot.place || '')}"
+          placeholder="Luogo... (es. Colosseo)"
+          aria-label="Luogo tappa ${slotIdx+1}"
+          autocomplete="off" />
+      </div>
     </div>
-    <div class="slot-col">
-      <label class="slot-label" for="time-${day.id}-${slotIdx}">🕐 Orario</label>
-      <input type="time" class="slot-input" id="time-${day.id}-${slotIdx}"
-        value="${slot.time || ''}" aria-label="Orario tappa ${slotIdx+1}" />
-    </div>
-    <div class="slot-col">
-      <label class="slot-label" for="maps-input-${dayIdx}-${slotIdx}">🗺 Link Google Maps</label>
-      <input type="url" class="slot-input" id="maps-input-${dayIdx}-${slotIdx}"
+    <div class="slot-maps-row">
+      <input type="url" class="slot-input slot-maps-input" id="maps-input-${dayIdx}-${slotIdx}"
         value="${esc(slot.mapsLink || '')}"
-        placeholder="Incolla qui il link di Maps"
+        placeholder="Link Google Maps (incolla o cerca sopra)"
         aria-label="Link Google Maps tappa ${slotIdx+1}" />
+      <button class="btn--maps-search" type="button"
+        aria-label="Cerca su Google Maps"
+        onclick="searchOnMaps(${dayIdx},${slotIdx})">🔍 Maps</button>
     </div>
-    <div class="slot-col">
+    <div class="slot-actions">
       <a href="${slot.mapsLink || '#'}" target="_blank" rel="noopener noreferrer"
         class="btn--go" id="go-${dayIdx}-${slotIdx}"
         aria-label="Portami a ${slot.place || 'questa tappa'}"
         ${!slot.mapsLink ? 'style="opacity:0.45;pointer-events:none"' : ''}>
         🧭 Portami Lì
       </a>
-    </div>
-    <div class="slot-col">
       <button class="btn--remove-slot" type="button"
         aria-label="Rimuovi tappa"
         onclick="removeSlot(${dayIdx},${slotIdx})">✕ Rimuovi</button>
@@ -344,7 +347,18 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
   placeInput.addEventListener('input', () => {
     tripData.days[dayIdx].slots[slotIdx].place = placeInput.value;
     saveData();
-    handlePlaceInput(placeInput, dayIdx, slotIdx);
+    // Solo avvia autocomplete se più di 1 carattere
+    if (placeInput.value.trim().length > 1) {
+      handlePlaceInput(placeInput, dayIdx, slotIdx);
+    } else {
+      closeDropdown();
+    }
+  });
+  placeInput.addEventListener('blur', () => {
+    // Salva al blur per sicurezza
+    tripData.days[dayIdx].slots[slotIdx].place = placeInput.value;
+    saveData();
+    setTimeout(closeDropdown, 200);
   });
 
   placeInput.addEventListener('keydown', (e) => {
@@ -684,16 +698,48 @@ function openViewerFromTicket(ticket) {
   const viewer = document.getElementById('fullscreen-viewer');
   const content = document.getElementById('viewer-content');
   content.innerHTML = '';
-  if (ticket.type === 'application/pdf') {
-    const iframe = document.createElement('iframe');
-    iframe.src = ticket.data; iframe.title = ticket.name;
-    Object.assign(iframe.style, { width:'100%', height:'100%', border:'none' });
-    content.appendChild(iframe);
-  } else {
+
+  const isPdf = ticket.type === 'application/pdf';
+  const isImage = ticket.type && (ticket.type.startsWith('image/') || ticket.data.startsWith('data:image/'));
+
+  if (isPdf) {
+    // Su Safari iOS iframe PDF non funziona - apri in nuova tab
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      // Mostra link cliccabile
+      const link = document.createElement('a');
+      link.href = ticket.data;
+      link.download = ticket.name;
+      link.style.cssText = 'color:#fff;font-size:1.5rem;text-align:center;padding:2rem;display:block;text-decoration:underline;';
+      link.textContent = '📄 Tocca per aprire ' + ticket.name;
+      link.target = '_blank';
+      content.appendChild(link);
+    } else {
+      const iframe = document.createElement('iframe');
+      iframe.src = ticket.data; iframe.title = ticket.name;
+      Object.assign(iframe.style, { width:'100%', height:'100%', border:'none' });
+      content.appendChild(iframe);
+    }
+  } else if (isImage) {
     const img = document.createElement('img');
-    img.src = ticket.data; img.alt = 'Biglietto: ' + ticket.name;
-    setupPinchZoom(img); content.appendChild(img);
+    img.src = ticket.data;
+    img.alt = 'Biglietto: ' + ticket.name;
+    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+    setupPinchZoom(img);
+    content.appendChild(img);
+  } else {
+    // Tipo sconosciuto - prova come immagine
+    const img = document.createElement('img');
+    img.src = ticket.data;
+    img.alt = ticket.name;
+    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+    img.onerror = () => {
+      content.innerHTML = '<p style="color:#fff;padding:2rem;text-align:center">Impossibile visualizzare questo file</p>';
+    };
+    setupPinchZoom(img);
+    content.appendChild(img);
   }
+
   viewer.classList.remove('hidden');
   viewer.querySelector('.viewer-close').focus();
   announce('Visualizzatore aperto: ' + ticket.name);
@@ -862,20 +908,30 @@ function exportPDF() {
   </p>
   </body></html>`;
 
-  // Download diretto come file HTML (apribile/stampabile come PDF da Safari)
-  try {
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'itinerario-' + (tripData.city || 'viaggio').replace(/\s+/g,'-').toLowerCase() + '.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
-    showToast('📄 Itinerario scaricato!', 'success');
-  } catch(e) {
-    showToast('Errore download: ' + e.message, 'error');
+  // Su iOS Safari non supporta Blob download - apri finestra di stampa
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    const win = window.open('', '_blank');
+    if (!win) { showToast('Abilita i popup in Safari per stampare', 'error'); return; }
+    win.document.write(html);
+    win.document.close();
+    setTimeout(() => { win.focus(); win.print(); }, 600);
+    showToast('📄 Premi Stampa → Salva come PDF', 'success');
+  } else {
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'itinerario-' + (tripData.city || 'viaggio').replace(/\s+/g,'-').toLowerCase() + '.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      showToast('📄 Itinerario scaricato!', 'success');
+    } catch(e) {
+      showToast('Errore: ' + e.message, 'error');
+    }
   }
   announce('Itinerario scaricato');
 }

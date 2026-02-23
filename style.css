@@ -446,13 +446,13 @@ body {
 .btn--remove-slot:hover { border-color: var(--accent-danger); color: var(--accent-danger); }
 
 .btn--add-slot {
-  background: transparent; border: 2px dashed var(--border-color);
-  color: var(--text-secondary); border-radius: var(--radius-sm);
+  background: rgba(220,38,38,0.08); border: 2px dashed var(--accent-danger);
+  color: var(--accent-danger); border-radius: var(--radius-sm);
   padding: 0.875rem 1rem; font-family: inherit; font-size: var(--text-sm);
-  font-weight: 700; cursor: pointer; width: 100%;
+  font-weight: 800; cursor: pointer; width: 100%;
   transition: all 0.15s ease; margin-top: 0.25rem;
 }
-.btn--add-slot:hover { border-color: var(--header-bg); color: var(--header-bg); }
+.btn--add-slot:hover { background: var(--accent-danger); color: #fff; }
 
 /* ---- AUTOCOMPLETE PLACES DROPDOWN ---- */
 .places-dropdown {
