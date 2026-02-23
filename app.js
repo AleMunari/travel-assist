@@ -347,18 +347,7 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
   placeInput.addEventListener('input', () => {
     tripData.days[dayIdx].slots[slotIdx].place = placeInput.value;
     saveData();
-    // Solo avvia autocomplete se più di 1 carattere
-    if (placeInput.value.trim().length > 1) {
-      handlePlaceInput(placeInput, dayIdx, slotIdx);
-    } else {
-      closeDropdown();
-    }
-  });
-  placeInput.addEventListener('blur', () => {
-    // Salva al blur per sicurezza
-    tripData.days[dayIdx].slots[slotIdx].place = placeInput.value;
-    saveData();
-    setTimeout(closeDropdown, 200);
+    handlePlaceInput(placeInput, dayIdx, slotIdx);
   });
 
   placeInput.addEventListener('keydown', (e) => {
@@ -700,41 +689,41 @@ function openViewerFromTicket(ticket) {
   content.innerHTML = '';
 
   const isPdf = ticket.type === 'application/pdf';
-  const isImage = ticket.type && (ticket.type.startsWith('image/') || ticket.data.startsWith('data:image/'));
 
   if (isPdf) {
-    // Su Safari iOS iframe PDF non funziona - apri in nuova tab
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      // Mostra link cliccabile
-      const link = document.createElement('a');
-      link.href = ticket.data;
-      link.download = ticket.name;
-      link.style.cssText = 'color:#fff;font-size:1.5rem;text-align:center;padding:2rem;display:block;text-decoration:underline;';
-      link.textContent = '📄 Tocca per aprire ' + ticket.name;
-      link.target = '_blank';
-      content.appendChild(link);
-    } else {
-      const iframe = document.createElement('iframe');
-      iframe.src = ticket.data; iframe.title = ticket.name;
-      Object.assign(iframe.style, { width:'100%', height:'100%', border:'none' });
-      content.appendChild(iframe);
+    // iOS Safari blocca base64 PDF in iframe - convertiamo in Blob e apriamo in Safari
+    try {
+      const base64 = ticket.data.split(',')[1];
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Mostra pulsante grande per aprire in Safari (unico modo affidabile su iOS)
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:2rem;padding:2rem;';
+      wrap.innerHTML = `
+        <div style="font-size:5rem">📄</div>
+        <div style="color:#fff;font-size:1.5rem;font-weight:700;text-align:center">${ticket.name}</div>
+        <a href="${blobUrl}" target="_blank" rel="noopener"
+           style="background:#e8a900;color:#1a1a2e;padding:1rem 2rem;border-radius:1rem;font-size:1.5rem;font-weight:900;text-decoration:none;display:block;text-align:center;">
+          📂 Apri PDF
+        </a>
+        <div style="color:#aaa;font-size:1rem;text-align:center">Si aprirà in Safari</div>
+      `;
+      content.appendChild(wrap);
+    } catch(e) {
+      content.innerHTML = `<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">Errore apertura PDF: ${e.message}</div>`;
     }
-  } else if (isImage) {
+  } else {
+    // Immagini: data URL funziona perfettamente su iOS
     const img = document.createElement('img');
     img.src = ticket.data;
     img.alt = 'Biglietto: ' + ticket.name;
-    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
-    setupPinchZoom(img);
-    content.appendChild(img);
-  } else {
-    // Tipo sconosciuto - prova come immagine
-    const img = document.createElement('img');
-    img.src = ticket.data;
-    img.alt = ticket.name;
-    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+    img.style.cssText = 'max-width:100%;max-height:90vh;object-fit:contain;display:block;';
     img.onerror = () => {
-      content.innerHTML = '<p style="color:#fff;padding:2rem;text-align:center">Impossibile visualizzare questo file</p>';
+      content.innerHTML = `<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">⚠️ Impossibile aprire l'immagine</div>`;
     };
     setupPinchZoom(img);
     content.appendChild(img);
@@ -908,32 +897,17 @@ function exportPDF() {
   </p>
   </body></html>`;
 
-  // Su iOS Safari non supporta Blob download - apri finestra di stampa
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (isIOS) {
-    const win = window.open('', '_blank');
-    if (!win) { showToast('Abilita i popup in Safari per stampare', 'error'); return; }
-    win.document.write(html);
-    win.document.close();
-    setTimeout(() => { win.focus(); win.print(); }, 600);
-    showToast('📄 Premi Stampa → Salva come PDF', 'success');
-  } else {
-    try {
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'itinerario-' + (tripData.city || 'viaggio').replace(/\s+/g,'-').toLowerCase() + '.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 3000);
-      showToast('📄 Itinerario scaricato!', 'success');
-    } catch(e) {
-      showToast('Errore: ' + e.message, 'error');
-    }
+  // iOS Safari non supporta download blob da PWA - apri finestra stampa
+  const win = window.open('', '_blank');
+  if (!win) {
+    showToast('Abilita i popup in Safari → Impostazioni → Safari → Blocco popup OFF', 'error');
+    return;
   }
-  announce('Itinerario scaricato');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => { win.focus(); win.print(); }, 600);
+  showToast('📄 Usa "Stampa → Salva come PDF"', 'success');
+  announce('Itinerario aperto per stampa');
 }
 
 // ---- RESET ----
