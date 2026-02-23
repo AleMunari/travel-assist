@@ -164,15 +164,17 @@ function renderTransportTickets() {
   ['andata', 'ritorno'].forEach(dir => {
     const ticket = tripData.transportTickets?.[dir];
     const display = document.getElementById('ticket-' + dir + '-display');
-    const input  = document.getElementById('input-' + dir);
-    const zone   = input ? input.previousElementSibling : null;
     if (!display) return;
+    const slot = display.closest('.transport-ticket-slot');
+    const zone = slot ? slot.querySelector('.pocket-upload-zone') : null;
+    const input = document.getElementById('input-' + dir);
     display.innerHTML = '';
     if (ticket) {
       display.appendChild(buildTransportTicketEl(ticket, dir));
       if (zone) zone.classList.add('hidden');
     } else {
       if (zone) zone.classList.remove('hidden');
+      if (input) input.value = '';
     }
   });
 }
@@ -201,9 +203,14 @@ function handleTransportTicket(event, dir) {
     saveData();
     const display = document.getElementById('ticket-' + dir + '-display');
     if (display) { display.innerHTML = ''; display.appendChild(buildTransportTicketEl(ticket, dir)); }
-    const input = document.getElementById('input-' + dir);
-    const zone  = input ? input.previousElementSibling : null;
-    if (zone) zone.classList.add('hidden');
+    // Hide the upload zone
+    const slot = display ? display.closest('.transport-ticket-slot') : null;
+    if (slot) {
+      const zone = slot.querySelector('.pocket-upload-zone');
+      if (zone) zone.classList.add('hidden');
+    }
+    // Also reset file input so same file can be re-uploaded
+    event.target.value = '';
     showToast('Biglietto ' + dir + ' caricato ✓', 'success');
     announce('Biglietto ' + dir + ' caricato');
   });
@@ -214,9 +221,17 @@ function deleteTransportTicket(dir) {
   saveData();
   const display = document.getElementById('ticket-' + dir + '-display');
   if (display) display.innerHTML = '';
+  // Show upload zone via closest slot container
+  if (display) {
+    const slot = display.closest('.transport-ticket-slot');
+    if (slot) {
+      const zone = slot.querySelector('.pocket-upload-zone');
+      if (zone) zone.classList.remove('hidden');
+    }
+  }
+  // Reset file input
   const input = document.getElementById('input-' + dir);
-  const zone  = input ? input.previousElementSibling : null;
-  if (zone) zone.classList.remove('hidden');
+  if (input) input.value = '';
   showToast('Biglietto eliminato', 'info');
 }
 
@@ -603,8 +618,11 @@ function createDayTicketPocket(day, dayIdx) {
   // Render ticket esistenti
   const list = pocket.querySelector('#day-tickets-' + day.id);
   (day.tickets || []).forEach((t, ti) => list.appendChild(createTicketItem(t, ti, 'day', dayIdx)));
-  // Nascondi zona carica se già ci sono biglietti
-  if ((day.tickets || []).length > 0) zone.classList.add('hidden');
+  // Se già ci sono biglietti: nascondi zona carica e mostra pulsante aggiungi
+  if ((day.tickets || []).length > 0) {
+    zone.classList.add('hidden');
+    ensureDayAddMoreBtn(day, dayIdx, inp, list);
+  }
 
   return pocket;
 }
@@ -625,6 +643,7 @@ function handleGlobalFileUpload(event) {
     renderGlobalTickets();
     showToast(file.name + ' caricato ✓', 'success');
   }));
+  event.target.value = '';
 }
 
 function handleDayFile(event, dayIdx) {
@@ -634,11 +653,30 @@ function handleDayFile(event, dayIdx) {
     saveData();
     const day = tripData.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
-    if (list) list.appendChild(createTicketItem(ticket, tripData.days[dayIdx].tickets.length - 1, 'day', dayIdx));
+    const ti = tripData.days[dayIdx].tickets.length - 1;
+    if (list) list.appendChild(createTicketItem(ticket, ti, 'day', dayIdx));
+    // Hide upload zone, show "add more" button
     const zone = document.getElementById('day-zone-' + day.id);
+    const inp  = document.getElementById('day-input-' + day.id);
     if (zone) zone.classList.add('hidden');
+    ensureDayAddMoreBtn(day, dayIdx, inp, list);
     showToast(file.name + ' caricato ✓', 'success');
   }));
+  event.target.value = '';
+}
+
+function ensureDayAddMoreBtn(day, dayIdx, inp, list) {
+  if (!list || !inp) return;
+  const btnId = 'day-add-more-' + day.id;
+  if (!document.getElementById(btnId)) {
+    const addBtn = document.createElement('button');
+    addBtn.id = btnId;
+    addBtn.className = 'btn--add-slot';
+    addBtn.style.marginTop = '0.75rem';
+    addBtn.textContent = '+ Aggiungi biglietto';
+    addBtn.addEventListener('click', () => inp.click());
+    list.after(addBtn);
+  }
 }
 
 function renderGlobalTickets() {
@@ -646,6 +684,30 @@ function renderGlobalTickets() {
   if (!list) return;
   list.innerHTML = '';
   (tripData.globalTickets || []).forEach((t, i) => list.appendChild(createTicketItem(t, i, 'global')));
+
+  const zone = document.getElementById('global-upload-zone');
+  const inp  = document.getElementById('global-file-input');
+
+  // Remove old "add more" button if present
+  const oldBtn = document.getElementById('global-add-more-btn');
+  if (oldBtn) oldBtn.remove();
+
+  if ((tripData.globalTickets || []).length > 0) {
+    if (zone) zone.classList.add('hidden');
+    // Add "Aggiungi altro" button after the list
+    if (inp) {
+      const addBtn = document.createElement('button');
+      addBtn.id = 'global-add-more-btn';
+      addBtn.className = 'btn--add-slot';
+      addBtn.style.marginTop = '0.75rem';
+      addBtn.textContent = '+ Aggiungi biglietto';
+      addBtn.addEventListener('click', () => inp.click());
+      list.after(addBtn);
+    }
+  } else {
+    if (zone) zone.classList.remove('hidden');
+    if (inp) inp.value = '';
+  }
 }
 
 function createTicketItem(ticket, idx, scope, dayIdx) {
@@ -673,9 +735,18 @@ function deleteTicket(scope, idx, dayIdx) {
     const day = tripData.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
     if (list) { list.innerHTML = ''; day.tickets.forEach((t,ti) => list.appendChild(createTicketItem(t,ti,'day',dayIdx))); }
+    const zone   = document.getElementById('day-zone-' + day.id);
+    const inp    = document.getElementById('day-input-' + day.id);
+    const addBtn = document.getElementById('day-add-more-' + day.id);
     if (day.tickets.length === 0) {
-      const zone = document.getElementById('day-zone-' + day.id);
       if (zone) zone.classList.remove('hidden');
+      if (inp) inp.value = '';
+      if (addBtn) addBtn.remove();
+    } else {
+      if (zone) zone.classList.add('hidden');
+      if (list && inp && !document.getElementById('day-add-more-' + day.id)) {
+        ensureDayAddMoreBtn(day, dayIdx, inp, list);
+      }
     }
   }
   showToast('Biglietto eliminato', 'info');
@@ -690,43 +761,97 @@ function openViewerFromTicket(ticket) {
 
   const isPdf = ticket.type === 'application/pdf';
 
-  if (isPdf) {
-    // iOS Safari blocca base64 PDF in iframe - convertiamo in Blob e apriamo in Safari
+  // Helper: create blob URL from base64 data
+  function makeBlobUrl(dataUrl, mimeType) {
     try {
-      const base64 = ticket.data.split(',')[1];
+      const base64 = dataUrl.split(',')[1];
       const binary = atob(base64);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const blob = new Blob([bytes], { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(blob);
+      return URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+    } catch(e) { return null; }
+  }
 
-      // Mostra pulsante grande per aprire in Safari (unico modo affidabile su iOS)
-      const wrap = document.createElement('div');
-      wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:2rem;padding:2rem;';
-      wrap.innerHTML = `
-        <div style="font-size:5rem">📄</div>
-        <div style="color:#fff;font-size:1.5rem;font-weight:700;text-align:center">${ticket.name}</div>
-        <a href="${blobUrl}" target="_blank" rel="noopener"
-           style="background:#e8a900;color:#1a1a2e;padding:1rem 2rem;border-radius:1rem;font-size:1.5rem;font-weight:900;text-decoration:none;display:block;text-align:center;">
-          📂 Apri PDF
-        </a>
-        <div style="color:#aaa;font-size:1rem;text-align:center">Si aprirà in Safari</div>
-      `;
-      content.appendChild(wrap);
-    } catch(e) {
-      content.innerHTML = `<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">Errore apertura PDF: ${e.message}</div>`;
+  // Download button helper
+  function makeDownloadBtn(blobUrl, label, filename) {
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:0.875rem 2rem;border-radius:1rem;font-size:1.375rem;font-weight:900;text-decoration:none;display:inline-block;text-align:center;';
+    a.textContent = label;
+    return a;
+  }
+
+  if (isPdf) {
+    const blobUrl = makeBlobUrl(ticket.data, 'application/pdf');
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1.5rem;padding:2rem;';
+
+    const icon = document.createElement('div');
+    icon.style.cssText = 'font-size:5rem;';
+    icon.textContent = '📄';
+
+    const name = document.createElement('div');
+    name.style.cssText = 'color:#fff;font-size:1.375rem;font-weight:700;text-align:center;max-width:80%;word-break:break-all;';
+    name.textContent = ticket.name;
+
+    wrap.appendChild(icon);
+    wrap.appendChild(name);
+
+    if (blobUrl) {
+      // Try to embed PDF for desktop; on iOS show open+download buttons
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (!isIOS) {
+        const iframe = document.createElement('iframe');
+        iframe.src = blobUrl;
+        iframe.style.cssText = 'width:100%;max-width:700px;height:60vh;border:none;border-radius:0.75rem;background:#fff;';
+        iframe.title = ticket.name;
+        wrap.appendChild(iframe);
+      }
+      // Open in new tab (works on iOS Safari)
+      const openBtn = makeDownloadBtn(blobUrl, '📂 Apri PDF', ticket.name);
+      openBtn.removeAttribute('download'); // just open, let browser handle
+      wrap.appendChild(openBtn);
+
+      // Download button (works on desktop/Android)
+      const dlBtn = makeDownloadBtn(blobUrl, '⬇ Scarica PDF', ticket.name);
+      wrap.appendChild(dlBtn);
+
+      const hint = document.createElement('div');
+      hint.style.cssText = 'color:#aaa;font-size:0.9rem;text-align:center;';
+      hint.textContent = 'Su iPhone usa "Apri PDF" → tocca la condivisione per salvare';
+      wrap.appendChild(hint);
+    } else {
+      const err = document.createElement('div');
+      err.style.cssText = 'color:#f87171;font-size:1.1rem;text-align:center;';
+      err.textContent = '⚠️ Impossibile aprire il file';
+      wrap.appendChild(err);
     }
+    content.appendChild(wrap);
+
   } else {
-    // Immagini: data URL funziona perfettamente su iOS
+    // Image
+    const blobUrl = makeBlobUrl(ticket.data, ticket.type || 'image/jpeg');
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1.25rem;padding:1rem;';
+
     const img = document.createElement('img');
-    img.src = ticket.data;
+    img.src = ticket.data; // use data URL directly for display (works on all browsers)
     img.alt = 'Biglietto: ' + ticket.name;
-    img.style.cssText = 'max-width:100%;max-height:90vh;object-fit:contain;display:block;';
+    img.style.cssText = 'max-width:100%;max-height:70vh;object-fit:contain;display:block;border-radius:0.5rem;';
     img.onerror = () => {
-      content.innerHTML = `<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">⚠️ Impossibile aprire l'immagine</div>`;
+      wrap.innerHTML = '<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">⚠️ Impossibile aprire l\'immagine</div>';
     };
     setupPinchZoom(img);
-    content.appendChild(img);
+    wrap.appendChild(img);
+
+    if (blobUrl) {
+      const dlBtn = makeDownloadBtn(blobUrl, '⬇ Scarica immagine', ticket.name);
+      wrap.appendChild(dlBtn);
+    }
+    content.appendChild(wrap);
   }
 
   viewer.classList.remove('hidden');
@@ -837,77 +962,6 @@ function haversine(lat1, lng1, lat2, lng2) {
   const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-// ---- EXPORT PDF ----
-function exportPDF() {
-  // Genera HTML e stampa come PDF
-  const d = tripData;
-  const daysHtml = (d.days || []).map((day, idx) => {
-    const slotsHtml = (day.slots || []).map(s =>
-      `<tr>
-        <td style="padding:6px 10px;border:1px solid #cce0ff;white-space:nowrap">${s.time || '—'}</td>
-        <td style="padding:6px 10px;border:1px solid #cce0ff;font-weight:600">${s.place || '—'}</td>
-        <td style="padding:6px 10px;border:1px solid #cce0ff;font-size:11px;color:#1d4ed8">
-          ${s.mapsLink ? `<a href="${s.mapsLink}" style="color:#1d4ed8">Apri Maps</a>` : '—'}
-        </td>
-      </tr>`
-    ).join('');
-    return `
-      <div style="margin-bottom:24px;page-break-inside:avoid">
-        <h3 style="background:#1d4ed8;color:white;padding:10px 14px;border-radius:8px;margin-bottom:8px">
-          Giorno ${idx+1} — ${formatDate(day.date)}
-        </h3>
-        ${slotsHtml ? `
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <thead>
-            <tr style="background:#e8f2ff">
-              <th style="padding:6px 10px;border:1px solid #cce0ff;text-align:left">Ora</th>
-              <th style="padding:6px 10px;border:1px solid #cce0ff;text-align:left">Luogo</th>
-              <th style="padding:6px 10px;border:1px solid #cce0ff;text-align:left">Maps</th>
-            </tr>
-          </thead>
-          <tbody>${slotsHtml}</tbody>
-        </table>` : '<p style="color:#94a3b8;font-style:italic">Nessuna tappa</p>'}
-      </div>`;
-  }).join('');
-
-  const html = `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
-  <title>Itinerario — ${d.city}</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 24px; color: #0f172a; }
-    h1 { color: #1d4ed8; border-bottom: 3px solid #e8a900; padding-bottom: 10px; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0 24px; }
-    .info-box { background: #e8f2ff; border-radius: 8px; padding: 12px; }
-    .info-box .label { font-size: 11px; color: #3b82f6; text-transform: uppercase; font-weight: 700; }
-    .info-box .value { font-size: 16px; font-weight: 700; margin-top: 4px; }
-    @media print { body { padding: 0; } }
-  </style>
-  </head><body>
-  <h1>✈ Itinerario — ${d.city}</h1>
-  <div class="info-grid">
-    <div class="info-box"><div class="label">Partenza</div><div class="value">${d.departureDate ? formatDate(d.departureDate) + ' ore ' + d.departureTime : '—'}</div></div>
-    <div class="info-box"><div class="label">Ritorno</div><div class="value">${d.returnDate ? formatDate(d.returnDate) + ' ore ' + d.returnTime : '—'}</div></div>
-    <div class="info-box"><div class="label">Mezzo</div><div class="value">${d.transport || '—'}</div></div>
-    <div class="info-box"><div class="label">Hotel</div><div class="value">${d.hotelAddress || '—'}</div></div>
-  </div>
-  ${daysHtml || '<p>Nessun giorno configurato</p>'}
-  <p style="margin-top:32px;font-size:11px;color:#94a3b8;text-align:center">
-    Generato da Travel Assist il ${new Date().toLocaleDateString('it-IT')}
-  </p>
-  </body></html>`;
-
-  // iOS Safari non supporta download blob da PWA - apri finestra stampa
-  const win = window.open('', '_blank');
-  if (!win) {
-    showToast('Abilita i popup in Safari → Impostazioni → Safari → Blocco popup OFF', 'error');
-    return;
-  }
-  win.document.write(html);
-  win.document.close();
-  setTimeout(() => { win.focus(); win.print(); }, 600);
-  showToast('📄 Usa "Stampa → Salva come PDF"', 'success');
-  announce('Itinerario aperto per stampa');
 }
 
 // ---- RESET ----

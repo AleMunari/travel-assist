@@ -36,10 +36,6 @@
       <span class="btn-icon" aria-hidden="true">🔍</span>
       <span class="btn-label">Info</span>
     </button>
-    <button class="header-btn header-btn--pdf" onclick="exportPDF()" aria-label="Scarica PDF itinerario">
-      <span class="btn-icon" aria-hidden="true">📄</span>
-      <span class="btn-label">PDF</span>
-    </button>
     <button class="header-btn header-btn--settings" onclick="showSection('settings')" aria-label="Impostazioni">
       <span class="btn-icon" aria-hidden="true">⚙</span>
       <span class="btn-label">Config</span>
@@ -186,9 +182,6 @@
     <div id="calendar-container" class="calendar-container" role="region" aria-label="Itinerario giornaliero">
       <div class="calendar-heading-row">
         <h2 id="dashboard-title" class="calendar-heading">Itinerario</h2>
-        <button class="btn btn--pdf-inline" onclick="exportPDF()" aria-label="Scarica PDF itinerario completo">
-          📄 Scarica PDF
-        </button>
       </div>
       <div id="days-list" class="days-list" aria-label="Lista giorni del viaggio"></div>
       <button class="btn btn--add-day" onclick="addDay()">+ Aggiungi giorno</button>
