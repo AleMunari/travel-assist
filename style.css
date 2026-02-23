@@ -32,20 +32,20 @@
   --shadow-card: 0 2px 12px rgba(30,64,175,0.10);
 
   /* Dimensioni — grandi per ipovisione */
-  --header-height: 5.5rem;
-  --btn-min:       3.25rem;   /* 52px */
+  --header-height: 7rem;
+  --btn-min:       4rem;      /* 64px */
   --radius-sm:     0.625rem;
   --radius-md:     1rem;
   --radius-lg:     1.5rem;
 
-  /* Tipografia grande */
-  --text-xs:   1rem;       /* 16px minimo */
-  --text-sm:   1.125rem;   /* 18px */
-  --text-base: 1.25rem;    /* 20px */
-  --text-lg:   1.5rem;     /* 24px */
-  --text-xl:   1.875rem;   /* 30px */
-  --text-2xl:  2.25rem;    /* 36px */
-  --text-3xl:  2.75rem;    /* 44px */
+  /* Tipografia ipovisione grave (1/10) */
+  --text-xs:   1.5rem;     /* 24px */
+  --text-sm:   1.875rem;   /* 30px */
+  --text-base: 2.25rem;    /* 36px */
+  --text-lg:   2.625rem;   /* 42px */
+  --text-xl:   3rem;       /* 48px */
+  --text-2xl:  3.5rem;     /* 56px */
+  --text-3xl:  4rem;       /* 64px */
 }
 
 /* ---- RESET ---- */
@@ -65,7 +65,7 @@ body {
     radial-gradient(circle at 85% 70%, rgba(232,169,0,0.08) 0%, transparent 50%);
   color: var(--text-primary);
   font-size: var(--text-base);
-  line-height: 1.6;
+  line-height: 1.8;
   min-height: 100vh;
 }
 
@@ -135,8 +135,8 @@ body {
   background: var(--accent-primary); color: #000;
   border-color: var(--accent-primary); transform: translateY(-1px);
 }
-.header-btn .btn-icon { font-size: 1.5rem; }
-.header-btn .btn-label { font-size: 0.75rem; line-height: 1; }
+.header-btn .btn-icon { font-size: 2rem; }
+.header-btn .btn-label { font-size: 1rem; line-height: 1; font-weight: 800; }
 
 .header-btn--pdf { background: rgba(124,58,237,0.4); border-color: rgba(167,139,250,0.5); }
 .header-btn--pdf:hover { background: var(--accent-pdf); border-color: var(--accent-pdf); color: #fff; }
@@ -400,15 +400,14 @@ body {
 .slot-item {
   background: var(--bg-elevated); border: 2px solid var(--border-color);
   border-radius: var(--radius-md); padding: 1rem;
-  display: flex; flex-direction: column; gap: 0.875rem;
 }
 
-/* Layout verticale colonne */
-.slot-col { display: flex; flex-direction: column; gap: 0.375rem; }
-.slot-label {
-  font-size: var(--text-xs); font-weight: 800;
-  color: var(--text-secondary); letter-spacing: 0.02em;
-}
+/* Campo luogo con autocomplete */
+.slot-place-wrapper { position: relative; flex: 1; }
+
+.slot-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.slot-time { min-width: 7rem; flex-shrink: 0; }
+.slot-place { flex: 1; min-width: 0; }
 
 .slot-input {
   width: 100%; min-height: 3rem;
@@ -421,7 +420,20 @@ body {
 .slot-input:focus { border-color: var(--header-bg); outline: none; }
 .slot-input::placeholder { color: #94a3b8; }
 
-.slot-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+.slot-maps-row {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;
+}
+.slot-maps-input { flex: 1; }
+.btn--maps-search {
+  background: var(--accent-secondary); color: #fff; border: none;
+  border-radius: var(--radius-sm); min-height: 3rem; padding: 0 1rem;
+  font-size: var(--text-xs); font-weight: 700; cursor: pointer;
+  font-family: inherit; white-space: nowrap; flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.btn--maps-search:hover { background: #0284c7; }
+
+.slot-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .btn--go {
   flex: 1; min-width: 9rem;
@@ -654,8 +666,16 @@ body {
   .form-row { grid-template-columns: 1fr; }
   .trip-info-bar { grid-template-columns: 1fr; }
   .transport-tickets-grid { grid-template-columns: 1fr; }
-  .header-btn .btn-label { font-size: 0.65rem; }
+  .header-btn { padding: 0.375rem 0.5rem; min-width: 3.5rem; }
+  .header-btn .btn-label { font-size: 0.875rem; }
 }
 @media (max-width: 380px) {
-  :root { --text-base: 1.125rem; }
+  :root {
+    --text-xs:   1.25rem;
+    --text-sm:   1.5rem;
+    --text-base: 1.875rem;
+    --text-lg:   2.25rem;
+    --text-xl:   2.625rem;
+  }
+  .header-btn .btn-label { font-size: 0.75rem; }
 }
