@@ -147,9 +147,9 @@
             onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
             <span aria-hidden="true">📎</span>
             <span>Carica biglietto</span>
-            <span class="upload-hint">PDF · JPEG · PNG</span>
+            <span class="upload-hint">Solo PDF</span>
           </div>
-          <input type="file" id="input-andata" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
+          <input type="file" id="input-andata" accept=".pdf" class="hidden"
             aria-label="Seleziona biglietto andata"
             onchange="handleTransportTicket(event,'andata')" />
           <div id="ticket-andata-display" class="transport-ticket-display" aria-live="polite"></div>
@@ -164,9 +164,9 @@
             onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
             <span aria-hidden="true">📎</span>
             <span>Carica biglietto</span>
-            <span class="upload-hint">PDF · JPEG · PNG</span>
+            <span class="upload-hint">Solo PDF</span>
           </div>
-          <input type="file" id="input-ritorno" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
+          <input type="file" id="input-ritorno" accept=".pdf" class="hidden"
             aria-label="Seleziona biglietto ritorno"
             onchange="handleTransportTicket(event,'ritorno')" />
           <div id="ticket-ritorno-display" class="transport-ticket-display" aria-live="polite"></div>
@@ -211,9 +211,9 @@
       onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
       <span aria-hidden="true">📁</span>
       <span>Clicca o trascina biglietti qui</span>
-      <span class="upload-hint">PDF, JPEG, PNG</span>
+      <span class="upload-hint">Solo PDF</span>
     </div>
-    <input type="file" id="global-file-input" accept=".pdf,.jpg,.jpeg,.png" multiple class="hidden"
+    <input type="file" id="global-file-input" accept=".pdf" multiple class="hidden"
       onchange="handleGlobalFileUpload(event)" />
     <div id="global-tickets-list" class="tickets-list" aria-live="polite"></div>
   </div>

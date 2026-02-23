@@ -202,9 +202,8 @@ function renderTransportTickets() {
 function buildTransportTicketEl(ticket, dir) {
   const el = document.createElement('div');
   el.className = 'transport-ticket-item';
-  const isPdf = ticket.type === 'application/pdf';
   el.innerHTML = `
-    <span style="font-size:1.375rem">${isPdf ? '📄' : '🖼'}</span>
+    <span style="font-size:1.25rem">📄</span>
     <span class="transport-ticket-name">${esc(ticket.name)}</span>
     <button class="transport-ticket-view" aria-label="Visualizza biglietto ${dir}">Apri</button>
     <button class="transport-ticket-del" aria-label="Elimina biglietto ${dir}">🗑</button>
@@ -666,9 +665,9 @@ function createDayTicketPocket(day, dayIdx) {
       id="day-zone-${day.id}">
       <span aria-hidden="true">📎</span>
       <span>Carica biglietti</span>
-      <span class="upload-hint">PDF · JPEG · PNG</span>
+      <span class="upload-hint">Solo PDF</span>
     </div>
-    <input type="file" id="day-input-${day.id}" accept=".pdf,.jpg,.jpeg,.png" multiple class="hidden"
+    <input type="file" id="day-input-${day.id}" accept=".pdf" class="hidden"
       aria-label="File biglietti giorno ${dayIdx+1}" />
     <div class="tickets-list" id="day-tickets-${day.id}" aria-live="polite"></div>
   `;
@@ -776,9 +775,8 @@ function renderGlobalTickets() {
 function createTicketItem(ticket, idx, scope, dayIdx) {
   const item = document.createElement('div');
   item.className = 'ticket-item';
-  const isPdf = ticket.type === 'application/pdf';
   item.innerHTML = `
-    <span class="ticket-icon">${isPdf ? '📄' : '🖼'}</span>
+    <span class="ticket-icon">📄</span>
     <span class="ticket-name">${esc(ticket.name)}</span>
     <button class="ticket-view-btn" aria-label="Visualizza ${esc(ticket.name)}">Apri</button>
     <button class="ticket-delete-btn" aria-label="Elimina ${esc(ticket.name)}">🗑</button>
@@ -822,135 +820,79 @@ function openViewerFromTicket(ticket) {
   const content = document.getElementById('viewer-content');
   content.innerHTML = '';
 
-  const isPdf = ticket.type === 'application/pdf';
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-  // Convert base64 dataURL to Blob + blobURL
+  // Converte base64 → blob URL
   function makeBlobUrl(dataUrl, mimeType) {
     try {
-      const base64 = dataUrl.split(',')[1];
-      const binary = atob(base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const b64 = dataUrl.split(',')[1];
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
       return URL.createObjectURL(new Blob([bytes], { type: mimeType }));
     } catch(e) { return null; }
   }
 
-  // Universal download: tries anchor click with dataURL first (works on desktop + Android),
-  // falls back to opening dataURL in new window (iOS Safari saves via long-press)
-  function downloadFile(dataUrl, filename) {
-    try {
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { document.body.removeChild(a); }, 200);
-      if (!isIOS) showToast('Download avviato ✓', 'success');
-    } catch(e) {
-      // Fallback: open in new window
-      window.open(dataUrl, '_blank');
-    }
-  }
+  const blobUrl = makeBlobUrl(ticket.data, 'application/pdf');
 
   const wrap = document.createElement('div');
-  // Semplice colonna centrata — il viewer-content fa lo scroll
-  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1.25rem;width:100%;max-width:700px;margin:0 auto;';
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1.5rem;width:100%;max-width:720px;margin:0 auto;';
 
-  if (isPdf) {
-    const blobUrl = makeBlobUrl(ticket.data, 'application/pdf');
+  // Icona + nome file
+  const icon = document.createElement('div');
+  icon.style.cssText = 'font-size:3.5rem;';
+  icon.textContent = '📄';
 
-    const icon = document.createElement('div');
-    icon.style.cssText = 'font-size:4rem;';
-    icon.textContent = '📄';
-    const name = document.createElement('div');
-    name.style.cssText = 'color:#fff;font-size:1.25rem;font-weight:700;text-align:center;max-width:85%;word-break:break-all;';
-    name.textContent = ticket.name;
-    wrap.appendChild(icon);
-    wrap.appendChild(name);
+  const name = document.createElement('div');
+  name.style.cssText = 'color:#fff;font-size:1.2rem;font-weight:700;text-align:center;max-width:90%;word-break:break-all;';
+  name.textContent = ticket.name;
 
-    // Desktop: embed iframe
-    if (!isIOS && blobUrl) {
+  wrap.appendChild(icon);
+  wrap.appendChild(name);
+
+  if (blobUrl) {
+    // Su desktop mostra il PDF embedded
+    if (!isIOS) {
       const iframe = document.createElement('iframe');
       iframe.src = blobUrl;
-      iframe.style.cssText = 'width:100%;max-width:700px;height:55vh;border:none;border-radius:0.75rem;background:#fff;';
+      iframe.style.cssText = 'width:100%;height:60vh;border:none;border-radius:0.75rem;background:#fff;';
       iframe.title = ticket.name;
       wrap.appendChild(iframe);
     }
 
-    // Bottone download/apertura
-    if (blobUrl) {
-      const dlBtn = document.createElement('button');
-      dlBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:0.875rem 2rem;border-radius:1rem;font-size:1.25rem;font-weight:900;border:none;cursor:pointer;';
-      dlBtn.textContent = isIOS ? '📂 Apri PDF' : '⬇ Scarica PDF';
-      dlBtn.addEventListener('click', () => {
-        if (isIOS) {
-          window.open(blobUrl, '_blank');
-          showToast('In Safari: premi 📤 → Salva nel file', 'info');
-        } else {
-          downloadFile(ticket.data, ticket.name);
-        }
-      });
-      wrap.appendChild(dlBtn);
-    }
-
-    if (isIOS) {
-      const hint = document.createElement('div');
-      hint.style.cssText = 'color:#aaa;font-size:0.9rem;text-align:center;max-width:300px;';
-      hint.textContent = 'Su iPhone: tocca "Apri PDF" → usa il pulsante Condividi 📤 per salvare';
-      wrap.appendChild(hint);
-    }
-
-  } else {
-    // IMMAGINE (JPEG, PNG, ecc.)
-    const img = document.createElement('img');
-    img.alt = 'Biglietto: ' + ticket.name;
-    img.style.cssText = 'max-width:100%;width:100%;object-fit:contain;display:block;border-radius:0.5rem;';
-
-    // Carica l'immagine: prova prima dataURL, se fallisce prova blob
-    img.onerror = () => {
-      // Prova con blob URL come fallback
-      try {
-        const blobUrl = makeBlobUrl(ticket.data, ticket.type || 'image/jpeg');
-        if (blobUrl && img.src !== blobUrl) { img.src = blobUrl; return; }
-      } catch(e) {}
-      wrap.innerHTML = '<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">⚠️ Impossibile aprire l\'immagine</div>';
-    };
-    img.src = ticket.data;
-    setupPinchZoom(img);
-    wrap.appendChild(img);
-
-    const name = document.createElement('div');
-    name.style.cssText = 'color:#ccc;font-size:1rem;text-align:center;word-break:break-all;max-width:85%;';
-    name.textContent = ticket.name;
-    wrap.appendChild(name);
-
-    // Download immagine: dataURL anchor click funziona ovunque tranne Chrome/iOS
-    // Per iOS Safari: apre in nuova tab → premi a lungo → Salva immagine
-    const dlBtn = document.createElement('button');
-    dlBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:0.875rem 2rem;border-radius:1rem;font-size:1.25rem;font-weight:900;border:none;cursor:pointer;';
-    dlBtn.textContent = isIOS ? '🖼 Apri immagine' : '⬇ Scarica immagine';
-    dlBtn.addEventListener('click', () => {
+    // Pulsante principale
+    const openBtn = document.createElement('button');
+    openBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:1rem 2.5rem;border-radius:1rem;font-size:1.375rem;font-weight:900;border:none;cursor:pointer;width:100%;max-width:320px;';
+    openBtn.textContent = isIOS ? '📂 Apri PDF in Safari' : '⬇ Scarica PDF';
+    openBtn.addEventListener('click', () => {
       if (isIOS) {
-        // iOS Safari: apri in nuova finestra, utente preme a lungo per salvare
-        const blobUrl = makeBlobUrl(ticket.data, ticket.type || 'image/jpeg');
-        if (blobUrl) window.open(blobUrl, '_blank');
-        else window.open(ticket.data, '_blank');
-        showToast('Premi a lungo sull\'immagine → Aggiungi a Foto', 'info');
+        window.open(blobUrl, '_blank');
+        showToast('In Safari: premi 📤 → Salva nel file', 'info');
       } else {
-        // Desktop/Android: download diretto con anchor + dataURL
-        downloadFile(ticket.data, ticket.name);
+        // Desktop: anchor download diretto
+        const a = document.createElement('a');
+        a.href = ticket.data;
+        a.download = ticket.name;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 200);
+        showToast('Download avviato ✓', 'success');
       }
     });
-    wrap.appendChild(dlBtn);
+    wrap.appendChild(openBtn);
 
     if (isIOS) {
       const hint = document.createElement('div');
-      hint.style.cssText = 'color:#aaa;font-size:0.9rem;text-align:center;max-width:300px;';
-      hint.textContent = 'Su iPhone: tocca "Apri immagine" → tieni premuto → Aggiungi alla Libreria foto';
+      hint.style.cssText = 'color:#999;font-size:0.85rem;text-align:center;max-width:280px;line-height:1.5;';
+      hint.textContent = 'Il PDF si aprirà in Safari. Usa il tasto Condividi 📤 → Salva nel file per scaricarlo.';
       wrap.appendChild(hint);
     }
+  } else {
+    const err = document.createElement('div');
+    err.style.cssText = 'color:#f87171;font-size:1.1rem;text-align:center;padding:1rem;';
+    err.textContent = '⚠️ Impossibile aprire il file. Riprova.';
+    wrap.appendChild(err);
   }
 
   content.appendChild(wrap);

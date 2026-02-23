@@ -306,14 +306,17 @@ body {
 
 .transport-ticket-display { display: flex; flex-direction: column; gap: 0.5rem; }
 .transport-ticket-item {
-  display: flex; align-items: center; gap: 0.5rem;
+  display: grid;
+  grid-template-columns: 1.5rem 1fr auto auto;
+  align-items: center; gap: 0.4rem;
   background: var(--bg-card); border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-sm); padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-sm); padding: 0.5rem 0.6rem;
 }
 .transport-ticket-name {
-  flex: 1; font-size: var(--text-xs); font-weight: 600;
-  color: var(--text-primary); overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--text-xs); font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0; /* essential for ellipsis inside grid */
 }
 .transport-ticket-view {
   background: var(--accent-primary); color: #000;
@@ -491,7 +494,9 @@ body {
 }
 .tickets-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
 .ticket-item {
-  display: flex; align-items: center; gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1.5rem 1fr auto auto;
+  align-items: center; gap: 0.5rem;
   background: var(--bg-card); border: 1.5px solid var(--border-color);
   border-radius: var(--radius-sm); padding: 0.75rem 1rem;
   transition: border-color 0.15s;
@@ -499,8 +504,10 @@ body {
 .ticket-item:hover { border-color: var(--accent-primary); }
 .ticket-icon { font-size: 1.5rem; flex-shrink: 0; }
 .ticket-name {
-  flex: 1; font-size: var(--text-sm); font-weight: 600;
-  color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0; /* essential for ellipsis inside grid */
 }
 .ticket-view-btn {
   background: var(--accent-primary); color: #000; border: none;
