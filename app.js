@@ -231,13 +231,12 @@ function createDayCard(day, idx) {
   header.className = 'day-header';
   header.setAttribute('aria-expanded', 'false');
   header.setAttribute('aria-controls', 'body-' + day.id);
-  header.setAttribute('aria-label', 'Giorno ' + (idx+1) + ': ' + formatDate(day.date));
+  header.setAttribute('aria-label', formatDate(day.date));
   header.innerHTML = `
     <div class="day-header-left">
-      <span class="day-number">${String(idx+1).padStart(2,'0')}</span>
       <div class="day-info">
         <span class="day-date">${formatDate(day.date)}</span>
-        <span class="day-label">${isToday(day.date) ? '📍 Oggi' : 'Giorno ' + (idx+1)}</span>
+        ${isToday(day.date) ? '<span class="day-label">📍 Oggi</span>' : ''}
       </div>
     </div>
     <span class="day-toggle" aria-hidden="true">▼</span>
@@ -284,37 +283,35 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
   item.id = 'slot-' + day.id + '-' + slotIdx;
 
   item.innerHTML = `
-    <div class="slot-row">
-      <div class="slot-time">
-        <label class="sr-only" for="time-${day.id}-${slotIdx}">Orario</label>
-        <input type="time" class="slot-input" id="time-${day.id}-${slotIdx}"
-          value="${slot.time || ''}" aria-label="Orario tappa ${slotIdx+1}" />
-      </div>
-      <div class="slot-place">
-        <label class="sr-only" for="place-input-${dayIdx}-${slotIdx}">Luogo</label>
-        <input type="text" class="slot-input" id="place-input-${dayIdx}-${slotIdx}"
-          value="${esc(slot.place || '')}"
-          placeholder="Luogo... (es. Colosseo)"
-          aria-label="Luogo tappa ${slotIdx+1}"
-          autocomplete="off" />
-      </div>
+    <div class="slot-col">
+      <label class="slot-label" for="place-input-${dayIdx}-${slotIdx}">📍 Luogo</label>
+      <input type="text" class="slot-input" id="place-input-${dayIdx}-${slotIdx}"
+        value="${esc(slot.place || '')}"
+        placeholder="es. Colosseo, Torre Eiffel..."
+        aria-label="Luogo tappa ${slotIdx+1}"
+        autocomplete="off" />
     </div>
-    <div class="slot-maps-row">
-      <input type="url" class="slot-input slot-maps-input" id="maps-input-${dayIdx}-${slotIdx}"
+    <div class="slot-col">
+      <label class="slot-label" for="time-${day.id}-${slotIdx}">🕐 Orario</label>
+      <input type="time" class="slot-input" id="time-${day.id}-${slotIdx}"
+        value="${slot.time || ''}" aria-label="Orario tappa ${slotIdx+1}" />
+    </div>
+    <div class="slot-col">
+      <label class="slot-label" for="maps-input-${dayIdx}-${slotIdx}">🗺 Link Google Maps</label>
+      <input type="url" class="slot-input" id="maps-input-${dayIdx}-${slotIdx}"
         value="${esc(slot.mapsLink || '')}"
-        placeholder="Link Google Maps (incolla o cerca sopra)"
+        placeholder="Incolla qui il link di Maps"
         aria-label="Link Google Maps tappa ${slotIdx+1}" />
-      <button class="btn--maps-search" type="button"
-        aria-label="Cerca su Google Maps"
-        onclick="searchOnMaps(${dayIdx},${slotIdx})">🔍 Maps</button>
     </div>
-    <div class="slot-actions">
+    <div class="slot-col">
       <a href="${slot.mapsLink || '#'}" target="_blank" rel="noopener noreferrer"
         class="btn--go" id="go-${dayIdx}-${slotIdx}"
         aria-label="Portami a ${slot.place || 'questa tappa'}"
         ${!slot.mapsLink ? 'style="opacity:0.45;pointer-events:none"' : ''}>
         🧭 Portami Lì
       </a>
+    </div>
+    <div class="slot-col">
       <button class="btn--remove-slot" type="button"
         aria-label="Rimuovi tappa"
         onclick="removeSlot(${dayIdx},${slotIdx})">✕ Rimuovi</button>
@@ -591,6 +588,9 @@ function createDayTicketPocket(day, dayIdx) {
   const list = pocket.querySelector('#day-tickets-' + day.id);
   (day.tickets || []).forEach((t, ti) => list.appendChild(createTicketItem(t, ti, 'day', dayIdx)));
 
+  // Nascondi zona carica se ci sono già biglietti
+  if ((day.tickets || []).length > 0) zone.classList.add('hidden');
+
   return pocket;
 }
 
@@ -620,6 +620,8 @@ function handleDayFile(event, dayIdx) {
     const day = tripData.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
     if (list) list.appendChild(createTicketItem(ticket, tripData.days[dayIdx].tickets.length - 1, 'day', dayIdx));
+    const zone = document.getElementById('day-zone-' + day.id);
+    if (zone) zone.classList.add('hidden');
     showToast(file.name + ' caricato ✓', 'success');
   }));
 }
@@ -656,6 +658,10 @@ function deleteTicket(scope, idx, dayIdx) {
     const day = tripData.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
     if (list) { list.innerHTML = ''; day.tickets.forEach((t,ti) => list.appendChild(createTicketItem(t,ti,'day',dayIdx))); }
+    if ((day.tickets || []).length === 0) {
+      const zone = document.getElementById('day-zone-' + day.id);
+      if (zone) zone.classList.remove('hidden');
+    }
   }
   showToast('Biglietto eliminato', 'info');
 }
@@ -844,7 +850,6 @@ function exportPDF() {
   </p>
   </body></html>`;
 
-  // Scarica direttamente come file HTML (apribile/stampabile come PDF)
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -855,7 +860,7 @@ function exportPDF() {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 2000);
   showToast('📄 Itinerario scaricato!', 'success');
-  announce('PDF scaricato');
+  announce('Itinerario scaricato');
 }
 
 // ---- RESET ----
