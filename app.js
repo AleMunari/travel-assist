@@ -164,10 +164,14 @@ function renderTransportTickets() {
   ['andata', 'ritorno'].forEach(dir => {
     const ticket = tripData.transportTickets?.[dir];
     const display = document.getElementById('ticket-' + dir + '-display');
+    const zone = document.querySelector(`#input-${dir}`)?.closest('.transport-ticket-slot')?.querySelector('.pocket-upload-zone');
     if (!display) return;
     display.innerHTML = '';
     if (ticket) {
       display.appendChild(buildTransportTicketEl(ticket, dir));
+      if (zone) zone.classList.add('hidden');
+    } else {
+      if (zone) zone.classList.remove('hidden');
     }
   });
 }
@@ -193,6 +197,8 @@ function handleTransportTicket(event, dir) {
     tripData.transportTickets[dir] = ticket;
     saveData();
     const display = document.getElementById('ticket-' + dir + '-display');
+    const zone = document.querySelector(`#input-${dir}`)?.closest('.transport-ticket-slot')?.querySelector('.pocket-upload-zone');
+    if (zone) zone.classList.add('hidden');
     if (display) { display.innerHTML = ''; display.appendChild(buildTransportTicketEl(ticket, dir)); }
     showToast('Biglietto ' + dir + ' caricato ✓', 'success');
     announce('Biglietto ' + dir + ' caricato');
@@ -204,6 +210,8 @@ function deleteTransportTicket(dir) {
   saveData();
   const display = document.getElementById('ticket-' + dir + '-display');
   if (display) display.innerHTML = '';
+  const zone = document.querySelector(`#input-${dir}`)?.closest('.transport-ticket-slot')?.querySelector('.pocket-upload-zone');
+  if (zone) zone.classList.remove('hidden');
   showToast('Biglietto eliminato', 'info');
 }
 
@@ -302,8 +310,11 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
     <div class="slot-maps-row">
       <input type="url" class="slot-input slot-maps-input" id="maps-input-${dayIdx}-${slotIdx}"
         value="${esc(slot.mapsLink || '')}"
-        placeholder="Link Google Maps (incolla qui)"
+        placeholder="Link Google Maps (incolla o cerca sopra)"
         aria-label="Link Google Maps tappa ${slotIdx+1}" />
+      <button class="btn--maps-search" type="button"
+        aria-label="Cerca su Google Maps"
+        onclick="searchOnMaps(${dayIdx},${slotIdx})">🔍 Maps</button>
     </div>
     <div class="slot-actions">
       <a href="${slot.mapsLink || '#'}" target="_blank" rel="noopener noreferrer"
@@ -721,10 +732,9 @@ function closeModal(id) {
 
 function openHotel() {
   const link = tripData.hotelMaps;
-  if (link) { window.open(link, '_blank', 'noopener,noreferrer'); showSection('dashboard'); return; }
+  if (link) { window.open(link, '_blank', 'noopener,noreferrer'); return; }
   if (tripData.hotelAddress) {
     window.open('https://maps.google.com/?q=' + encodeURIComponent(tripData.hotelAddress), '_blank', 'noopener,noreferrer');
-    showSection('dashboard');
     return;
   }
   showToast('Configura prima l\'indirizzo dell\'hotel', 'error');
@@ -847,16 +857,6 @@ function exportPDF() {
   win.document.write(html);
   win.document.close();
   setTimeout(() => { win.focus(); win.print(); }, 400);
-
-  // Quando l'utente torna all'app, assicura di essere sulla dashboard
-  const onVisible = () => {
-    if (!document.hidden) {
-      showSection('dashboard');
-      document.removeEventListener('visibilitychange', onVisible);
-    }
-  };
-  document.addEventListener('visibilitychange', onVisible);
-
   announce('PDF aperto per la stampa');
 }
 
