@@ -302,11 +302,8 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
     <div class="slot-maps-row">
       <input type="url" class="slot-input slot-maps-input" id="maps-input-${dayIdx}-${slotIdx}"
         value="${esc(slot.mapsLink || '')}"
-        placeholder="Link Google Maps (incolla o cerca sopra)"
+        placeholder="Link Google Maps (incolla qui)"
         aria-label="Link Google Maps tappa ${slotIdx+1}" />
-      <button class="btn--maps-search" type="button"
-        aria-label="Cerca su Google Maps"
-        onclick="searchOnMaps(${dayIdx},${slotIdx})">🔍 Maps</button>
     </div>
     <div class="slot-actions">
       <a href="${slot.mapsLink || '#'}" target="_blank" rel="noopener noreferrer"
@@ -724,9 +721,10 @@ function closeModal(id) {
 
 function openHotel() {
   const link = tripData.hotelMaps;
-  if (link) { window.open(link, '_blank', 'noopener,noreferrer'); return; }
+  if (link) { window.open(link, '_blank', 'noopener,noreferrer'); showSection('dashboard'); return; }
   if (tripData.hotelAddress) {
     window.open('https://maps.google.com/?q=' + encodeURIComponent(tripData.hotelAddress), '_blank', 'noopener,noreferrer');
+    showSection('dashboard');
     return;
   }
   showToast('Configura prima l\'indirizzo dell\'hotel', 'error');
@@ -849,6 +847,16 @@ function exportPDF() {
   win.document.write(html);
   win.document.close();
   setTimeout(() => { win.focus(); win.print(); }, 400);
+
+  // Quando l'utente torna all'app, assicura di essere sulla dashboard
+  const onVisible = () => {
+    if (!document.hidden) {
+      showSection('dashboard');
+      document.removeEventListener('visibilitychange', onVisible);
+    }
+  };
+  document.addEventListener('visibilitychange', onVisible);
+
   announce('PDF aperto per la stampa');
 }
 

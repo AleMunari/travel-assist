@@ -39,13 +39,13 @@
   --radius-lg:     1.5rem;
 
   /* Tipografia grande */
-  --text-xs:   1rem;       /* 16px minimo */
-  --text-sm:   1.125rem;   /* 18px */
-  --text-base: 1.25rem;    /* 20px */
-  --text-lg:   1.5rem;     /* 24px */
-  --text-xl:   1.875rem;   /* 30px */
-  --text-2xl:  2.25rem;    /* 36px */
-  --text-3xl:  2.75rem;    /* 44px */
+  --text-xs:   1.125rem;   /* 18px */
+  --text-sm:   1.25rem;    /* 20px */
+  --text-base: 1.375rem;   /* 22px */
+  --text-lg:   1.625rem;   /* 26px */
+  --text-xl:   2rem;       /* 32px */
+  --text-2xl:  2.5rem;     /* 40px */
+  --text-3xl:  3rem;       /* 48px */
 }
 
 /* ---- RESET ---- */
@@ -135,8 +135,8 @@ body {
   background: var(--accent-primary); color: #000;
   border-color: var(--accent-primary); transform: translateY(-1px);
 }
-.header-btn .btn-icon { font-size: 1.5rem; }
-.header-btn .btn-label { font-size: 0.75rem; line-height: 1; }
+.header-btn .btn-icon { font-size: 1.625rem; }
+.header-btn .btn-label { font-size: 0.875rem; line-height: 1; }
 
 .header-btn--pdf { background: rgba(124,58,237,0.4); border-color: rgba(167,139,250,0.5); }
 .header-btn--pdf:hover { background: var(--accent-pdf); border-color: var(--accent-pdf); color: #fff; }
@@ -666,7 +666,7 @@ body {
   .form-row { grid-template-columns: 1fr; }
   .trip-info-bar { grid-template-columns: 1fr; }
   .transport-tickets-grid { grid-template-columns: 1fr; }
-  .header-btn .btn-label { font-size: 0.65rem; }
+  .header-btn .btn-label { font-size: 0.75rem; }
 }
 @media (max-width: 380px) {
   :root { --text-base: 1.125rem; }
