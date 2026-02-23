@@ -106,20 +106,42 @@ function handleSetup(e) {
 // ---- GIORNI ----
 function generateDays(start, end) {
   if (!start || !end) return [];
-  const days = []; let cur = new Date(start + 'T00:00:00'); let n = 1;
-  const last = new Date(end + 'T00:00:00');
+  const days = [];
+  // Parse as local date (split by '-') to avoid UTC shift
+  const parseParts = s => s.split('-').map(Number);
+  const [sy, sm, sd] = parseParts(start);
+  const [ey, em, ed] = parseParts(end);
+  let cur = new Date(sy, sm - 1, sd);
+  const last = new Date(ey, em - 1, ed);
+  let n = 1;
   while (cur <= last) {
-    days.push({ id: 'day' + n, date: cur.toISOString().split('T')[0], slots: [], tickets: [] });
-    cur.setDate(cur.getDate() + 1); n++;
+    const dateStr = cur.getFullYear() + '-' +
+      String(cur.getMonth() + 1).padStart(2, '0') + '-' +
+      String(cur.getDate()).padStart(2, '0');
+    days.push({ id: 'day' + n, date: dateStr, slots: [], tickets: [] });
+    cur.setDate(cur.getDate() + 1);
+    n++;
   }
   return days;
 }
 
 function addDay() {
   const last = tripData.days[tripData.days.length - 1];
-  let next = new Date();
-  if (last) { next = new Date(last.date + 'T00:00:00'); next.setDate(next.getDate() + 1); }
-  const d = { id: 'day' + (tripData.days.length + 1), date: next.toISOString().split('T')[0], slots: [], tickets: [] };
+  let nextDateStr;
+  if (last) {
+    // Incrementa la data dell'ultimo giorno senza usare toISOString (evita sfasamento UTC)
+    const parts = last.date.split('-');
+    const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]) + 1);
+    nextDateStr = d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  } else {
+    const today = new Date();
+    nextDateStr = today.getFullYear() + '-' +
+      String(today.getMonth() + 1).padStart(2, '0') + '-' +
+      String(today.getDate()).padStart(2, '0');
+  }
+  const d = { id: 'day' + (tripData.days.length + 1), date: nextDateStr, slots: [], tickets: [] };
   tripData.days.push(d);
   saveData();
   const container = document.getElementById('days-list');
@@ -833,7 +855,8 @@ function openViewerFromTicket(ticket) {
   }
 
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;gap:1.25rem;padding:5rem 1.5rem 3rem;';
+  // Semplice colonna centrata — il viewer-content fa lo scroll
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1.25rem;width:100%;max-width:700px;margin:0 auto;';
 
   if (isPdf) {
     const blobUrl = makeBlobUrl(ticket.data, 'application/pdf');
@@ -882,12 +905,19 @@ function openViewerFromTicket(ticket) {
   } else {
     // IMMAGINE (JPEG, PNG, ecc.)
     const img = document.createElement('img');
-    img.src = ticket.data;
     img.alt = 'Biglietto: ' + ticket.name;
-    img.style.cssText = 'max-width:100%;max-height:60vh;object-fit:contain;display:block;border-radius:0.5rem;';
+    img.style.cssText = 'max-width:100%;width:100%;object-fit:contain;display:block;border-radius:0.5rem;';
+
+    // Carica l'immagine: prova prima dataURL, se fallisce prova blob
     img.onerror = () => {
+      // Prova con blob URL come fallback
+      try {
+        const blobUrl = makeBlobUrl(ticket.data, ticket.type || 'image/jpeg');
+        if (blobUrl && img.src !== blobUrl) { img.src = blobUrl; return; }
+      } catch(e) {}
       wrap.innerHTML = '<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">⚠️ Impossibile aprire l\'immagine</div>';
     };
+    img.src = ticket.data;
     setupPinchZoom(img);
     wrap.appendChild(img);
 
