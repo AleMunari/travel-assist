@@ -255,20 +255,11 @@ body {
   box-shadow: var(--shadow-card);
 }
 .trip-info-item { display: flex; flex-direction: column; gap: 0.25rem; }
-.trip-info-item--distance {
-  grid-column: 1 / -1; background: var(--bg-elevated);
-  border-radius: var(--radius-md); padding: 0.875rem 1rem;
-  border: 1.5px solid var(--border-color);
-}
 .info-label {
   font-size: var(--text-xs); color: var(--text-muted);
   font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
 }
 .info-value { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); }
-.info-value--large {
-  font-size: var(--text-xl); color: var(--header-bg);
-  font-family: 'JetBrains Mono', monospace;
-}
 
 /* ---- TRANSPORT POCKET ---- */
 .transport-pocket {
@@ -425,6 +416,27 @@ body {
 }
 .btn--go:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,0.35); }
 .btn--go[style*="pointer-events:none"] { background: #94a3b8; box-shadow: none; }
+
+.btn--save-slot {
+  background: var(--accent-go); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  min-height: 3.25rem; padding: 0.75rem 1rem;
+  font-family: inherit; font-size: var(--text-sm); font-weight: 700;
+  cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+}
+.btn--save-slot:hover { background: #15803d; }
+
+/* Slot saved state: dim editing inputs visually */
+.slot-saved .slot-row,
+.slot-saved .slot-maps-row {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.slot-saved { border-color: var(--accent-go) !important; }
+.slot-saved .btn--save-slot {
+  background: var(--accent-secondary);
+}
+.slot-saved .btn--save-slot:hover { background: #0284c7; }
 
 .btn--remove-slot {
   background: transparent; border: 2px solid var(--border-color);

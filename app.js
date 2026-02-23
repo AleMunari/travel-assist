@@ -41,8 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     showSection('setup');
   }
 
-  startGeo();
-
   // Chiudi dropdown cliccando fuori
   document.addEventListener('click', (e) => {
     const dd = document.getElementById('places-dropdown');
@@ -343,6 +341,10 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
         ${!slot.mapsLink ? 'style="opacity:0.45;pointer-events:none"' : ''}>
         🧭 Portami Lì
       </a>
+      <button class="btn--save-slot" type="button"
+        aria-label="Salva tappa"
+        id="save-slot-${dayIdx}-${slotIdx}"
+        onclick="saveSlotDone(${dayIdx},${slotIdx})">✓ Fatto</button>
       <button class="btn--remove-slot" type="button"
         aria-label="Rimuovi tappa"
         onclick="removeSlot(${dayIdx},${slotIdx})">✕ Rimuovi</button>
@@ -592,6 +594,45 @@ function removeSlot(dayIdx, slotIdx) {
   announce('Tappa rimossa');
 }
 
+function saveSlotDone(dayIdx, slotIdx) {
+  // Force-save the current field values (in case change events haven't fired)
+  const day = tripData.days[dayIdx];
+  const timeInput  = document.getElementById('time-' + day.id + '-' + slotIdx);
+  const placeInput = document.getElementById('place-input-' + dayIdx + '-' + slotIdx);
+  const mapsInput  = document.getElementById('maps-input-' + dayIdx + '-' + slotIdx);
+  if (timeInput)  tripData.days[dayIdx].slots[slotIdx].time     = timeInput.value;
+  if (placeInput) tripData.days[dayIdx].slots[slotIdx].place    = placeInput.value;
+  if (mapsInput)  tripData.days[dayIdx].slots[slotIdx].mapsLink = mapsInput.value;
+  saveData();
+
+  // Visual feedback: collapse the slot into a compact saved view
+  const item = document.getElementById('slot-' + day.id + '-' + slotIdx);
+  if (item) {
+    item.classList.add('slot-saved');
+    const btn = document.getElementById('save-slot-' + dayIdx + '-' + slotIdx);
+    if (btn) {
+      btn.textContent = '✏️ Modifica';
+      btn.onclick = () => editSlot(dayIdx, slotIdx);
+    }
+  }
+  showToast('Tappa salvata ✓', 'success');
+  announce('Tappa salvata');
+}
+
+function editSlot(dayIdx, slotIdx) {
+  const day = tripData.days[dayIdx];
+  const item = document.getElementById('slot-' + day.id + '-' + slotIdx);
+  if (item) {
+    item.classList.remove('slot-saved');
+    const btn = document.getElementById('save-slot-' + dayIdx + '-' + slotIdx);
+    if (btn) {
+      btn.textContent = '✓ Fatto';
+      btn.onclick = () => saveSlotDone(dayIdx, slotIdx);
+    }
+  }
+  announce('Tappa in modifica');
+}
+
 // ---- TASCA BIGLIETTI GIORNALIERI ----
 function createDayTicketPocket(day, dayIdx) {
   const pocket = document.createElement('div');
@@ -760,8 +801,9 @@ function openViewerFromTicket(ticket) {
   content.innerHTML = '';
 
   const isPdf = ticket.type === 'application/pdf';
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-  // Helper: create blob URL from base64 data
+  // Convert base64 dataURL to Blob + blobURL
   function makeBlobUrl(dataUrl, mimeType) {
     try {
       const base64 = dataUrl.split(',')[1];
@@ -772,88 +814,116 @@ function openViewerFromTicket(ticket) {
     } catch(e) { return null; }
   }
 
-  // Download button helper
-  function makeDownloadBtn(blobUrl, label, filename) {
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:0.875rem 2rem;border-radius:1rem;font-size:1.375rem;font-weight:900;text-decoration:none;display:inline-block;text-align:center;';
-    a.textContent = label;
-    return a;
+  // Universal download: tries anchor click with dataURL first (works on desktop + Android),
+  // falls back to opening dataURL in new window (iOS Safari saves via long-press)
+  function downloadFile(dataUrl, filename) {
+    try {
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); }, 200);
+      if (!isIOS) showToast('Download avviato ✓', 'success');
+    } catch(e) {
+      // Fallback: open in new window
+      window.open(dataUrl, '_blank');
+    }
   }
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;gap:1.25rem;padding:5rem 1.5rem 3rem;';
 
   if (isPdf) {
     const blobUrl = makeBlobUrl(ticket.data, 'application/pdf');
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1.5rem;padding:2rem;';
 
     const icon = document.createElement('div');
-    icon.style.cssText = 'font-size:5rem;';
+    icon.style.cssText = 'font-size:4rem;';
     icon.textContent = '📄';
-
     const name = document.createElement('div');
-    name.style.cssText = 'color:#fff;font-size:1.375rem;font-weight:700;text-align:center;max-width:80%;word-break:break-all;';
+    name.style.cssText = 'color:#fff;font-size:1.25rem;font-weight:700;text-align:center;max-width:85%;word-break:break-all;';
     name.textContent = ticket.name;
-
     wrap.appendChild(icon);
     wrap.appendChild(name);
 
-    if (blobUrl) {
-      // Try to embed PDF for desktop; on iOS show open+download buttons
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      if (!isIOS) {
-        const iframe = document.createElement('iframe');
-        iframe.src = blobUrl;
-        iframe.style.cssText = 'width:100%;max-width:700px;height:60vh;border:none;border-radius:0.75rem;background:#fff;';
-        iframe.title = ticket.name;
-        wrap.appendChild(iframe);
-      }
-      // Open in new tab (works on iOS Safari)
-      const openBtn = makeDownloadBtn(blobUrl, '📂 Apri PDF', ticket.name);
-      openBtn.removeAttribute('download'); // just open, let browser handle
-      wrap.appendChild(openBtn);
-
-      // Download button (works on desktop/Android)
-      const dlBtn = makeDownloadBtn(blobUrl, '⬇ Scarica PDF', ticket.name);
-      wrap.appendChild(dlBtn);
-
-      const hint = document.createElement('div');
-      hint.style.cssText = 'color:#aaa;font-size:0.9rem;text-align:center;';
-      hint.textContent = 'Su iPhone usa "Apri PDF" → tocca la condivisione per salvare';
-      wrap.appendChild(hint);
-    } else {
-      const err = document.createElement('div');
-      err.style.cssText = 'color:#f87171;font-size:1.1rem;text-align:center;';
-      err.textContent = '⚠️ Impossibile aprire il file';
-      wrap.appendChild(err);
+    // Desktop: embed iframe
+    if (!isIOS && blobUrl) {
+      const iframe = document.createElement('iframe');
+      iframe.src = blobUrl;
+      iframe.style.cssText = 'width:100%;max-width:700px;height:55vh;border:none;border-radius:0.75rem;background:#fff;';
+      iframe.title = ticket.name;
+      wrap.appendChild(iframe);
     }
-    content.appendChild(wrap);
+
+    // Bottone download/apertura
+    if (blobUrl) {
+      const dlBtn = document.createElement('button');
+      dlBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:0.875rem 2rem;border-radius:1rem;font-size:1.25rem;font-weight:900;border:none;cursor:pointer;';
+      dlBtn.textContent = isIOS ? '📂 Apri PDF' : '⬇ Scarica PDF';
+      dlBtn.addEventListener('click', () => {
+        if (isIOS) {
+          window.open(blobUrl, '_blank');
+          showToast('In Safari: premi 📤 → Salva nel file', 'info');
+        } else {
+          downloadFile(ticket.data, ticket.name);
+        }
+      });
+      wrap.appendChild(dlBtn);
+    }
+
+    if (isIOS) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'color:#aaa;font-size:0.9rem;text-align:center;max-width:300px;';
+      hint.textContent = 'Su iPhone: tocca "Apri PDF" → usa il pulsante Condividi 📤 per salvare';
+      wrap.appendChild(hint);
+    }
 
   } else {
-    // Image
-    const blobUrl = makeBlobUrl(ticket.data, ticket.type || 'image/jpeg');
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1.25rem;padding:1rem;';
-
+    // IMMAGINE (JPEG, PNG, ecc.)
     const img = document.createElement('img');
-    img.src = ticket.data; // use data URL directly for display (works on all browsers)
+    img.src = ticket.data;
     img.alt = 'Biglietto: ' + ticket.name;
-    img.style.cssText = 'max-width:100%;max-height:70vh;object-fit:contain;display:block;border-radius:0.5rem;';
+    img.style.cssText = 'max-width:100%;max-height:60vh;object-fit:contain;display:block;border-radius:0.5rem;';
     img.onerror = () => {
       wrap.innerHTML = '<div style="color:#fff;padding:2rem;text-align:center;font-size:1.2rem">⚠️ Impossibile aprire l\'immagine</div>';
     };
     setupPinchZoom(img);
     wrap.appendChild(img);
 
-    if (blobUrl) {
-      const dlBtn = makeDownloadBtn(blobUrl, '⬇ Scarica immagine', ticket.name);
-      wrap.appendChild(dlBtn);
+    const name = document.createElement('div');
+    name.style.cssText = 'color:#ccc;font-size:1rem;text-align:center;word-break:break-all;max-width:85%;';
+    name.textContent = ticket.name;
+    wrap.appendChild(name);
+
+    // Download immagine: dataURL anchor click funziona ovunque tranne Chrome/iOS
+    // Per iOS Safari: apre in nuova tab → premi a lungo → Salva immagine
+    const dlBtn = document.createElement('button');
+    dlBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:0.875rem 2rem;border-radius:1rem;font-size:1.25rem;font-weight:900;border:none;cursor:pointer;';
+    dlBtn.textContent = isIOS ? '🖼 Apri immagine' : '⬇ Scarica immagine';
+    dlBtn.addEventListener('click', () => {
+      if (isIOS) {
+        // iOS Safari: apri in nuova finestra, utente preme a lungo per salvare
+        const blobUrl = makeBlobUrl(ticket.data, ticket.type || 'image/jpeg');
+        if (blobUrl) window.open(blobUrl, '_blank');
+        else window.open(ticket.data, '_blank');
+        showToast('Premi a lungo sull\'immagine → Aggiungi a Foto', 'info');
+      } else {
+        // Desktop/Android: download diretto con anchor + dataURL
+        downloadFile(ticket.data, ticket.name);
+      }
+    });
+    wrap.appendChild(dlBtn);
+
+    if (isIOS) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'color:#aaa;font-size:0.9rem;text-align:center;max-width:300px;';
+      hint.textContent = 'Su iPhone: tocca "Apri immagine" → tieni premuto → Aggiungi alla Libreria foto';
+      wrap.appendChild(hint);
     }
-    content.appendChild(wrap);
   }
 
+  content.appendChild(wrap);
   viewer.classList.remove('hidden');
   viewer.querySelector('.viewer-close').focus();
   announce('Visualizzatore aperto: ' + ticket.name);
@@ -936,33 +1006,6 @@ function openAttractions() {
   }, { timeout: 10000 });
 }
 
-// ---- GEOLOCALIZZAZIONE DISTANZA ----
-function startGeo() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.watchPosition(pos => {
-    currentPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-    updateDistance();
-  }, () => {}, { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 });
-}
-
-function updateDistance() {
-  const el = document.getElementById('display-distance');
-  if (!el || !currentPosition) return;
-  const today = new Date().toISOString().split('T')[0];
-  const todayDay = tripData.days?.find(d => d.date === today);
-  if (!todayDay) return;
-  const next = (todayDay.slots || []).find(s => s.lat && s.lng);
-  if (!next) return;
-  const km = haversine(currentPosition.lat, currentPosition.lng, next.lat, next.lng);
-  el.textContent = km < 1 ? Math.round(km * 1000) + ' m' : km.toFixed(1) + ' km';
-  setText('distance-label', 'Distanza da: ' + (next.place || 'prossima tappa'));
-}
-
-function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
 
 // ---- RESET ----
 function resetTrip() {
