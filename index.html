@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Travel Assist" />
+  <meta name="description" content="La tua app di viaggio accessibile" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>Travel Assist</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- SKIP LINK per screen reader -->
+<a href="#main-content" class="skip-link">Vai al contenuto principale</a>
+
+<!-- ===== HEADER FISSO ===== -->
+<header class="app-header" role="banner">
+  <div class="header-brand">
+    <span class="brand-icon" aria-hidden="true">✈</span>
+    <span class="brand-name">Travel Assist</span>
+  </div>
+  <nav class="header-actions" aria-label="Azioni rapide">
+    <button class="header-btn" id="btn-ticket" onclick="openTicketModal()" aria-label="Carica o visualizza biglietti di mobilità">
+      <span class="btn-icon" aria-hidden="true">🎫</span>
+      <span class="btn-label">Biglietti</span>
+    </button>
+    <button class="header-btn" id="btn-hotel" onclick="openHotel()" aria-label="Naviga verso l'hotel">
+      <span class="btn-icon" aria-hidden="true">🏨</span>
+      <span class="btn-label">Hotel</span>
+    </button>
+    <button class="header-btn" id="btn-info" onclick="openAttractions()" aria-label="Scopri attrazioni vicino a te">
+      <span class="btn-icon" aria-hidden="true">🔍</span>
+      <span class="btn-label">Info</span>
+    </button>
+    <button class="header-btn header-btn--settings" id="btn-settings" onclick="showSection('settings')" aria-label="Impostazioni viaggio">
+      <span class="btn-icon" aria-hidden="true">⚙</span>
+      <span class="btn-label">Config</span>
+    </button>
+  </nav>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main id="main-content" class="app-main">
+
+  <!-- SEZIONE: Setup iniziale -->
+  <section id="section-setup" class="section section--setup" aria-labelledby="setup-title">
+    <div class="setup-card">
+      <h1 id="setup-title" class="setup-title">Benvenuto in Travel Assist</h1>
+      <p class="setup-subtitle">Configura il tuo viaggio per iniziare</p>
+      <form id="setup-form" novalidate>
+        <div class="form-group">
+          <label for="city" class="form-label">Città di destinazione</label>
+          <input type="text" id="city" name="city" class="form-input" placeholder="es. Roma, Barcellona..." required aria-required="true" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="departure-date" class="form-label">Data Partenza</label>
+            <input type="date" id="departure-date" name="departure-date" class="form-input" required aria-required="true" />
+          </div>
+          <div class="form-group">
+            <label for="departure-time" class="form-label">Ora Partenza</label>
+            <input type="time" id="departure-time" name="departure-time" class="form-input" required aria-required="true" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="return-date" class="form-label">Data Ritorno</label>
+            <input type="date" id="return-date" name="return-date" class="form-input" required aria-required="true" />
+          </div>
+          <div class="form-group">
+            <label for="return-time" class="form-label">Ora Ritorno</label>
+            <input type="time" id="return-time" name="return-time" class="form-input" required aria-required="true" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="transport" class="form-label">Mezzo di trasporto</label>
+          <select id="transport" name="transport" class="form-input form-select" required aria-required="true">
+            <option value="">Seleziona...</option>
+            <option value="autobus">🚌 Autobus</option>
+            <option value="auto">🚗 Auto</option>
+            <option value="treno">🚂 Treno</option>
+            <option value="aereo">✈️ Aereo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="hotel-address" class="form-label">Indirizzo Hotel</label>
+          <input type="text" id="hotel-address" name="hotel-address" class="form-input" placeholder="Via, Numero, Città" autocomplete="street-address" />
+        </div>
+        <button type="submit" class="btn btn--primary btn--full" id="btn-start">
+          Inizia il Viaggio →
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- SEZIONE: Dashboard principale -->
+  <section id="section-dashboard" class="section section--dashboard hidden" aria-labelledby="dashboard-title">
+
+    <!-- Info Generali -->
+    <div class="trip-info-bar" role="region" aria-label="Informazioni viaggio">
+      <div class="trip-info-item">
+        <span class="info-label">Destinazione</span>
+        <span class="info-value" id="display-city">—</span>
+      </div>
+      <div class="trip-info-item">
+        <span class="info-label">Partenza</span>
+        <span class="info-value" id="display-departure">—</span>
+      </div>
+      <div class="trip-info-item">
+        <span class="info-label">Ritorno</span>
+        <span class="info-value" id="display-return">—</span>
+      </div>
+      <div class="trip-info-item trip-info-item--distance">
+        <span class="info-label">Distanza dalla prossima tappa</span>
+        <span class="info-value info-value--large" id="display-distance" aria-live="polite" aria-atomic="true">— km</span>
+      </div>
+    </div>
+
+    <!-- Emergenze -->
+    <div class="emergency-bar" role="region" aria-label="Numeri di emergenza">
+      <span class="emergency-title" aria-hidden="true">🚨 Emergenze:</span>
+      <a href="tel:113" class="emergency-btn" aria-label="Chiama Polizia al 113">
+        <span aria-hidden="true">👮</span> Polizia 113
+      </a>
+      <a href="tel:118" class="emergency-btn" aria-label="Chiama Ambulanza al 118">
+        <span aria-hidden="true">🚑</span> Ambulanza 118
+      </a>
+      <a href="tel:112" class="emergency-btn" aria-label="Chiama Emergenza Europea al 112">
+        <span aria-hidden="true">🆘</span> Europeo 112
+      </a>
+      <button class="emergency-btn" onclick="callConsulate()" aria-label="Chiama il Consolato">
+        <span aria-hidden="true">🏛</span> Consolato
+      </button>
+    </div>
+
+    <!-- Calendario Verticale -->
+    <div id="calendar-container" class="calendar-container" role="region" aria-label="Itinerario giornaliero">
+      <h2 id="dashboard-title" class="calendar-heading">Il tuo Itinerario</h2>
+      <div id="days-list" class="days-list" aria-label="Lista giorni del viaggio"></div>
+      <button class="btn btn--add-day" onclick="addDay()" aria-label="Aggiungi un giorno all'itinerario">
+        + Aggiungi giorno manuale
+      </button>
+    </div>
+
+  </section>
+
+  <!-- SEZIONE: Impostazioni -->
+  <section id="section-settings" class="section section--settings hidden" aria-labelledby="settings-title">
+    <div class="settings-card">
+      <h2 id="settings-title">Modifica Configurazione</h2>
+      <p>Aggiorna i dettagli del tuo viaggio.</p>
+      <button class="btn btn--secondary btn--full" onclick="resetTrip()">Resetta e Riconfigura</button>
+      <button class="btn btn--ghost btn--full" onclick="showSection('dashboard')">← Torna all'itinerario</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== MODAL: Biglietti ===== -->
+<div id="modal-ticket" class="modal hidden" role="dialog" aria-labelledby="modal-ticket-title" aria-modal="true">
+  <div class="modal-overlay" onclick="closeModal('modal-ticket')"></div>
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('modal-ticket')" aria-label="Chiudi">✕</button>
+    <h2 id="modal-ticket-title">🎫 Biglietti di Mobilità</h2>
+    <p class="modal-subtitle">Carica i tuoi biglietti di trasporto</p>
+    <div class="upload-zone" id="global-upload-zone" role="button" tabindex="0" aria-label="Zona caricamento biglietti, clicca o trascina file qui"
+         onclick="document.getElementById('global-file-input').click()"
+         onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+      <span aria-hidden="true">📁</span>
+      <span>Clicca o trascina biglietti qui</span>
+      <span class="upload-hint">PDF, JPEG, PNG supportati</span>
+    </div>
+    <input type="file" id="global-file-input" accept=".pdf,.jpg,.jpeg,.png" multiple class="hidden" onchange="handleGlobalFileUpload(event)" aria-label="Seleziona file biglietti" />
+    <div id="global-tickets-list" class="tickets-list" aria-live="polite" aria-label="Lista biglietti caricati"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Attrazioni ===== -->
+<div id="modal-attractions" class="modal hidden" role="dialog" aria-labelledby="modal-attractions-title" aria-modal="true">
+  <div class="modal-overlay" onclick="closeModal('modal-attractions')"></div>
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('modal-attractions')" aria-label="Chiudi">✕</button>
+    <h2 id="modal-attractions-title">🔍 Attrazioni Vicino a Te</h2>
+    <div id="attractions-loading" class="loading-state" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <span>Rilevamento posizione...</span>
+    </div>
+    <div id="attractions-content" class="hidden">
+      <p id="attractions-location" class="location-info"></p>
+      <a id="btn-attractions-maps" href="#" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn--full">
+        🗺 Cerca Attrazioni su Maps
+      </a>
+      <a id="btn-attractions-portami" href="#" target="_blank" rel="noopener noreferrer" class="btn btn--accent btn--full">
+        🧭 Portami al Centro
+      </a>
+    </div>
+    <div id="attractions-error" class="hidden error-state">
+      <p>Impossibile rilevare la posizione. Assicurati di aver dato i permessi.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FULLSCREEN VIEWER ===== -->
+<div id="fullscreen-viewer" class="fullscreen-viewer hidden" role="dialog" aria-labelledby="viewer-title" aria-modal="true">
+  <button class="viewer-close" onclick="closeViewer()" aria-label="Chiudi visualizzatore">✕</button>
+  <h2 id="viewer-title" class="sr-only">Visualizzatore Biglietto</h2>
+  <div class="viewer-content" id="viewer-content"></div>
+  <div class="viewer-hint" aria-live="polite">Pizzica per zoomare • Doppio tap per resettare</div>
+</div>
+
+<!-- LIVE REGION per annunci screen reader -->
+<div id="sr-announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
