@@ -664,7 +664,7 @@ function createDayTicketPocket(day, dayIdx) {
       aria-label="Carica biglietti del giorno ${dayIdx+1}"
       id="day-zone-${day.id}">
       <span aria-hidden="true">📎</span>
-      <span>Carica biglietti</span>
+      <span>Carica biglietto PDF</span>
       <span class="upload-hint">Solo PDF</span>
     </div>
     <input type="file" id="day-input-${day.id}" accept=".pdf" class="hidden"
