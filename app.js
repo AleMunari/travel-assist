@@ -164,15 +164,15 @@ function renderTransportTickets() {
   ['andata', 'ritorno'].forEach(dir => {
     const ticket = tripData.transportTickets?.[dir];
     const display = document.getElementById('ticket-' + dir + '-display');
-    const input = document.getElementById('input-' + dir);
-    const zone = input ? input.previousElementSibling : null;
+    const input  = document.getElementById('input-' + dir);
+    const zone   = input ? input.previousElementSibling : null;
     if (!display) return;
     display.innerHTML = '';
     if (ticket) {
       display.appendChild(buildTransportTicketEl(ticket, dir));
-      if (zone && zone.classList.contains('pocket-upload-zone')) zone.classList.add('hidden');
+      if (zone) zone.classList.add('hidden');
     } else {
-      if (zone && zone.classList.contains('pocket-upload-zone')) zone.classList.remove('hidden');
+      if (zone) zone.classList.remove('hidden');
     }
   });
 }
@@ -185,10 +185,10 @@ function buildTransportTicketEl(ticket, dir) {
     <span style="font-size:1.375rem">${isPdf ? '📄' : '🖼'}</span>
     <span class="transport-ticket-name">${esc(ticket.name)}</span>
     <button class="transport-ticket-view" aria-label="Visualizza biglietto ${dir}">Apri</button>
-    <button class="transport-ticket-del" aria-label="Elimina biglietto ${dir}" onclick="deleteTransportTicket('${dir}')">🗑</button>
+    <button class="transport-ticket-del" aria-label="Elimina biglietto ${dir}">🗑</button>
   `;
-  // Usa addEventListener per evitare problemi con JSON inline
   el.querySelector('.transport-ticket-view').addEventListener('click', () => openViewerFromTicket(ticket));
+  el.querySelector('.transport-ticket-del').addEventListener('click', () => deleteTransportTicket(dir));
   return el;
 }
 
@@ -201,10 +201,9 @@ function handleTransportTicket(event, dir) {
     saveData();
     const display = document.getElementById('ticket-' + dir + '-display');
     if (display) { display.innerHTML = ''; display.appendChild(buildTransportTicketEl(ticket, dir)); }
-    // Nascondi zona upload
     const input = document.getElementById('input-' + dir);
-    const zone = input ? input.previousElementSibling : null;
-    if (zone && zone.classList.contains('pocket-upload-zone')) zone.classList.add('hidden');
+    const zone  = input ? input.previousElementSibling : null;
+    if (zone) zone.classList.add('hidden');
     showToast('Biglietto ' + dir + ' caricato ✓', 'success');
     announce('Biglietto ' + dir + ' caricato');
   });
@@ -215,10 +214,9 @@ function deleteTransportTicket(dir) {
   saveData();
   const display = document.getElementById('ticket-' + dir + '-display');
   if (display) display.innerHTML = '';
-  // Mostra di nuovo zona upload
   const input = document.getElementById('input-' + dir);
-  const zone = input ? input.previousElementSibling : null;
-  if (zone && zone.classList.contains('pocket-upload-zone')) zone.classList.remove('hidden');
+  const zone  = input ? input.previousElementSibling : null;
+  if (zone) zone.classList.remove('hidden');
   showToast('Biglietto eliminato', 'info');
 }
 
@@ -605,6 +603,8 @@ function createDayTicketPocket(day, dayIdx) {
   // Render ticket esistenti
   const list = pocket.querySelector('#day-tickets-' + day.id);
   (day.tickets || []).forEach((t, ti) => list.appendChild(createTicketItem(t, ti, 'day', dayIdx)));
+  // Nascondi zona carica se già ci sono biglietti
+  if ((day.tickets || []).length > 0) zone.classList.add('hidden');
 
   return pocket;
 }
@@ -635,6 +635,8 @@ function handleDayFile(event, dayIdx) {
     const day = tripData.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
     if (list) list.appendChild(createTicketItem(ticket, tripData.days[dayIdx].tickets.length - 1, 'day', dayIdx));
+    const zone = document.getElementById('day-zone-' + day.id);
+    if (zone) zone.classList.add('hidden');
     showToast(file.name + ' caricato ✓', 'success');
   }));
 }
@@ -671,6 +673,10 @@ function deleteTicket(scope, idx, dayIdx) {
     const day = tripData.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
     if (list) { list.innerHTML = ''; day.tickets.forEach((t,ti) => list.appendChild(createTicketItem(t,ti,'day',dayIdx))); }
+    if (day.tickets.length === 0) {
+      const zone = document.getElementById('day-zone-' + day.id);
+      if (zone) zone.classList.remove('hidden');
+    }
   }
   showToast('Biglietto eliminato', 'info');
 }
@@ -859,12 +865,22 @@ function exportPDF() {
   </p>
   </body></html>`;
 
-  const win = window.open('', '_blank');
-  if (!win) { showToast('Abilita i popup per scaricare il PDF', 'error'); return; }
-  win.document.write(html);
-  win.document.close();
-  setTimeout(() => { win.focus(); win.print(); }, 400);
-  announce('PDF aperto per la stampa');
+  // Download diretto come file HTML (apribile/stampabile come PDF da Safari)
+  try {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'itinerario-' + (tripData.city || 'viaggio').replace(/\s+/g,'-').toLowerCase() + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    showToast('📄 Itinerario scaricato!', 'success');
+  } catch(e) {
+    showToast('Errore download: ' + e.message, 'error');
+  }
+  announce('Itinerario scaricato');
 }
 
 // ---- RESET ----
