@@ -2038,12 +2038,12 @@ function openTimePicker(fieldId) {
     _drumHourVal = 8; _drumMinVal = 0;
   }
   buildDrum('drum-hours', 24, _drumHourVal);
-  buildDrum('drum-minutes', 60, _drumMinVal, 5);
+  buildDrum('drum-minutes', 60, _drumMinVal);
   document.getElementById('modal-time-picker').classList.remove('hidden');
   // Scroll to selected after render
   setTimeout(() => {
     scrollDrumToValue('drum-hours', _drumHourVal, 1);
-    scrollDrumToValue('drum-minutes', _drumMinVal, 5);
+    scrollDrumToValue('drum-minutes', _drumMinVal, 1);
   }, 60);
   announce('Selettore ora aperto');
 }
@@ -2117,7 +2117,7 @@ function setTimeDisplay(fieldId, timeStr) {
 
 function confirmTime() {
   const h = getDrumValue('drum-hours', 1);
-  const m = getDrumValue('drum-minutes', 5);
+  const m = getDrumValue('drum-minutes', 1);
   const timeStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
   setTimeDisplay(_timePickerTarget, timeStr);
   closeTimePicker();
