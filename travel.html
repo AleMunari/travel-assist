@@ -272,8 +272,8 @@
     .transport-ticket-name { font-size: var(--text-xs); font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
     .transport-ticket-view { background: var(--accent-primary); color: #000; border: none; border-radius: var(--radius-sm); padding: 0.375rem 0.75rem; font-size: var(--text-xs); font-weight: 700; cursor: pointer; min-height: 2.25rem; transition: all 0.15s ease; }
     .transport-ticket-view:hover { background: #d97706; }
-    .transport-ticket-del { background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0.375rem; font-size: 1rem; border-radius: var(--radius-sm); transition: color 0.15s; }
-    .transport-ticket-del:hover { color: var(--accent-danger); }
+    .transport-ticket-del { background: transparent; border: 2px solid transparent; color: #94a3b8; cursor: pointer; padding: 0.5rem 0.75rem; font-size: 1.25rem; border-radius: var(--radius-sm); transition: all 0.15s; min-height: 2.75rem; min-width: 2.75rem; display:flex; align-items:center; justify-content:center; }
+    .transport-ticket-del:hover { color: var(--accent-danger); border-color: var(--accent-danger); background: rgba(220,38,38,0.08); }
 
     /* CALENDAR */
     .calendar-container { margin-top: 0.25rem; }
@@ -352,8 +352,8 @@
     .ticket-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
     .ticket-view-btn { background: var(--accent-primary); color: #000; border: none; border-radius: var(--radius-sm); padding: 0.5rem 0.875rem; font-family: inherit; font-size: var(--text-xs); font-weight: 700; cursor: pointer; min-height: 2.75rem; flex-shrink: 0; transition: all 0.15s; }
     .ticket-view-btn:hover { background: #d97706; }
-    .ticket-delete-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0.5rem; font-size: 1.125rem; border-radius: var(--radius-sm); transition: color 0.15s; min-height: 2.75rem; }
-    .ticket-delete-btn:hover { color: var(--accent-danger); }
+    .ticket-delete-btn { background: transparent; border: 2px solid transparent; color: #94a3b8; cursor: pointer; padding: 0.5rem 0.75rem; font-size: 1.25rem; border-radius: var(--radius-sm); transition: all 0.15s; min-height: 2.75rem; min-width: 2.75rem; display:flex; align-items:center; justify-content:center; }
+    .ticket-delete-btn:hover { color: var(--accent-danger); border-color: var(--accent-danger); background: rgba(220,38,38,0.08); }
 
     /* MODALS */
     .modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
@@ -658,7 +658,7 @@
 
 <a href="#main-content" class="skip-link">Vai al contenuto principale</a>
 
-<header class="app-header" role="banner">
+<header class="app-header" id="app-header" role="banner" style="display:none;">
   <nav class="header-actions" aria-label="Azioni rapide">
     <button class="header-btn" onclick="openTicketModal()" aria-label="Biglietti di mobilità">
       <span class="btn-icon" aria-hidden="true">🎫</span>
@@ -986,6 +986,16 @@ function loadData() {
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
   document.getElementById('section-' + name)?.classList.remove('hidden');
+  // Mostra header solo fuori dal setup
+  const header = document.getElementById('app-header');
+  const main   = document.querySelector('.app-main');
+  if (name === 'setup') {
+    header.style.display = 'none';
+    main.style.paddingTop = '1.25rem';
+  } else {
+    header.style.display = 'flex';
+    main.style.paddingTop = '';
+  }
   announce('Sezione ' + name);
 }
 
@@ -1933,6 +1943,9 @@ function renderGlobalTickets() {
 function createTicketItem(ticket, idx, scope, dayIdx) {
   const item = document.createElement('div');
   item.className = 'ticket-item';
+  item.dataset.idx   = idx;
+  item.dataset.scope = scope;
+  if (dayIdx !== undefined) item.dataset.dayIdx = dayIdx;
   item.innerHTML = `
     <span class="ticket-icon">📄</span>
     <span class="ticket-name">${esc(ticket.name)}</span>
@@ -1940,21 +1953,32 @@ function createTicketItem(ticket, idx, scope, dayIdx) {
     <button class="ticket-delete-btn" aria-label="Elimina ${esc(ticket.name)}">🗑</button>
   `;
   item.querySelector('.ticket-view-btn').addEventListener('click', () => openViewerFromTicket(ticket));
-  item.querySelector('.ticket-delete-btn').addEventListener('click', () => deleteTicket(scope, idx, dayIdx));
+  item.querySelector('.ticket-delete-btn').addEventListener('click', () => {
+    // Legge l'indice aggiornato dal dataset del parent (potrebbe essere stato cambiato da re-render)
+    const currentIdx   = parseInt(item.dataset.idx);
+    const currentScope = item.dataset.scope;
+    const currentDay   = item.dataset.dayIdx !== undefined ? parseInt(item.dataset.dayIdx) : undefined;
+    deleteTicket(currentScope, currentIdx, currentDay);
+  });
   return item;
 }
 
 function deleteTicket(scope, idx, dayIdx) {
   if (scope === 'global') {
-    tripData.cities[currentCityIdx].globalTickets.splice(idx, 1);
-    saveData(); renderGlobalTickets();
+    const c = tripData.cities[currentCityIdx];
+    c.globalTickets.splice(idx, 1);
+    saveData();
+    renderGlobalTickets();
   } else if (scope === 'day') {
     const _cd = tripData.cities[currentCityIdx];
     _cd.days[dayIdx].tickets.splice(idx, 1);
     saveData();
     const day = _cd.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
-    if (list) { list.innerHTML = ''; day.tickets.forEach((t,ti) => list.appendChild(createTicketItem(t,ti,'day',dayIdx))); }
+    if (list) {
+      list.innerHTML = '';
+      day.tickets.forEach((t, ti) => list.appendChild(createTicketItem(t, ti, 'day', dayIdx)));
+    }
     const zone   = document.getElementById('day-zone-' + day.id);
     const inp    = document.getElementById('day-input-' + day.id);
     const addBtn = document.getElementById('day-add-more-' + day.id);
