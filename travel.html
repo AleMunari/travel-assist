@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <style>
     /* ============================================================
@@ -1978,6 +1979,21 @@ function openViewerFromTicket(ticket) {
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+  // Wrapper principale
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1rem;width:100%;max-width:760px;margin:0 auto;padding-bottom:1rem;';
+
+  // Nome file
+  const nameEl = document.createElement('div');
+  nameEl.style.cssText = 'color:#fff;font-size:1.2rem;font-weight:700;text-align:center;max-width:90%;word-break:break-all;';
+  nameEl.textContent = '📄 ' + ticket.name;
+  wrap.appendChild(nameEl);
+
+  // Bottone download/apri
+  const openBtn = document.createElement('button');
+  openBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:0.875rem 2rem;border-radius:1rem;font-size:1.2rem;font-weight:900;border:none;cursor:pointer;width:100%;max-width:320px;flex-shrink:0;';
+  openBtn.textContent = isIOS ? '📂 Apri in Safari' : '⬇ Scarica PDF';
+
   function makeBlobUrl(dataUrl, mimeType) {
     try {
       const b64 = dataUrl.split(',')[1];
@@ -1990,66 +2006,109 @@ function openViewerFromTicket(ticket) {
 
   const blobUrl = makeBlobUrl(ticket.data, 'application/pdf');
 
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1.5rem;width:100%;max-width:720px;margin:0 auto;';
-
-  const icon = document.createElement('div');
-  icon.style.cssText = 'font-size:3.5rem;';
-  icon.textContent = '📄';
-
-  const name = document.createElement('div');
-  name.style.cssText = 'color:#fff;font-size:1.2rem;font-weight:700;text-align:center;max-width:90%;word-break:break-all;';
-  name.textContent = ticket.name;
-
-  wrap.appendChild(icon);
-  wrap.appendChild(name);
-
-  if (blobUrl) {
-    if (!isIOS) {
-      const iframe = document.createElement('iframe');
-      iframe.src = blobUrl;
-      iframe.style.cssText = 'width:100%;height:60vh;border:none;border-radius:0.75rem;background:#fff;';
-      iframe.title = ticket.name;
-      wrap.appendChild(iframe);
+  openBtn.addEventListener('click', () => {
+    if (isIOS && blobUrl) {
+      window.open(blobUrl, '_blank');
+      showToast('In Safari: premi 📤 → Salva nel file', 'info');
+    } else {
+      const a = document.createElement('a');
+      a.href = ticket.data;
+      a.download = ticket.name;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => document.body.removeChild(a), 200);
+      showToast('Download avviato ✓', 'success');
     }
+  });
+  wrap.appendChild(openBtn);
 
-    const openBtn = document.createElement('button');
-    openBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:1rem 2.5rem;border-radius:1rem;font-size:1.375rem;font-weight:900;border:none;cursor:pointer;width:100%;max-width:320px;';
-    openBtn.textContent = isIOS ? '📂 Apri PDF in Safari' : '⬇ Scarica PDF';
-    openBtn.addEventListener('click', () => {
-      if (isIOS) {
-        window.open(blobUrl, '_blank');
-        showToast('In Safari: premi 📤 → Salva nel file', 'info');
-      } else {
-        const a = document.createElement('a');
-        a.href = ticket.data;
-        a.download = ticket.name;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => document.body.removeChild(a), 200);
-        showToast('Download avviato ✓', 'success');
-      }
-    });
-    wrap.appendChild(openBtn);
+  // Contenitore pagine
+  const pagesContainer = document.createElement('div');
+  pagesContainer.style.cssText = 'width:100%;display:flex;flex-direction:column;gap:0.75rem;align-items:center;';
 
-    if (isIOS) {
-      const hint = document.createElement('div');
-      hint.style.cssText = 'color:#999;font-size:0.85rem;text-align:center;max-width:280px;line-height:1.5;';
-      hint.textContent = 'Il PDF si aprirà in Safari. Usa il tasto Condividi 📤 → Salva nel file per scaricarlo.';
-      wrap.appendChild(hint);
-    }
-  } else {
-    const err = document.createElement('div');
-    err.style.cssText = 'color:#f87171;font-size:1.1rem;text-align:center;padding:1rem;';
-    err.textContent = '⚠️ Impossibile aprire il file. Riprova.';
-    wrap.appendChild(err);
-  }
+  // Indicatore caricamento
+  const loading = document.createElement('div');
+  loading.style.cssText = 'color:#ccc;font-size:1.1rem;padding:2rem;text-align:center;';
+  loading.textContent = '⏳ Caricamento pagine...';
+  pagesContainer.appendChild(loading);
+  wrap.appendChild(pagesContainer);
 
   content.appendChild(wrap);
   viewer.classList.remove('hidden');
   viewer.querySelector('.viewer-close').focus();
   announce('Visualizzatore aperto: ' + ticket.name);
+
+  // Renderizza tutte le pagine con PDF.js
+  if (typeof pdfjsLib !== 'undefined' && ticket.data) {
+    // Imposta worker
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    const b64 = ticket.data.split(',')[1];
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+    pdfjsLib.getDocument({ data: bytes }).promise.then(pdfDoc => {
+      pagesContainer.innerHTML = '';
+
+      // Contatore pagine
+      const pageCount = document.createElement('div');
+      pageCount.style.cssText = 'color:#aaa;font-size:0.95rem;text-align:center;margin-bottom:0.25rem;';
+      pageCount.textContent = pdfDoc.numPages + (pdfDoc.numPages === 1 ? ' pagina' : ' pagine');
+      pagesContainer.appendChild(pageCount);
+
+      // Renderizza ogni pagina
+      const renderPage = (num) => {
+        return pdfDoc.getPage(num).then(page => {
+          const viewport = page.getViewport({ scale: 1 });
+          // Calcola scala per riempire il 96% della larghezza disponibile
+          const containerWidth = Math.min(window.innerWidth * 0.96, 740);
+          const scale = containerWidth / viewport.width;
+          const scaledViewport = page.getViewport({ scale });
+
+          const canvas = document.createElement('canvas');
+          canvas.width  = scaledViewport.width;
+          canvas.height = scaledViewport.height;
+          canvas.style.cssText = 'width:100%;max-width:740px;border-radius:0.5rem;display:block;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.4);';
+
+          const ctx = canvas.getContext('2d');
+          return page.render({ canvasContext: ctx, viewport: scaledViewport }).promise.then(() => {
+            pagesContainer.appendChild(canvas);
+          });
+        });
+      };
+
+      // Renderizza pagine in sequenza
+      const renderAll = async () => {
+        for (let n = 1; n <= pdfDoc.numPages; n++) {
+          await renderPage(n);
+        }
+      };
+      renderAll().catch(() => {
+        pagesContainer.innerHTML = '<div style="color:#f87171;padding:1rem;text-align:center;">⚠️ Errore nel rendering del PDF</div>';
+      });
+
+    }).catch(() => {
+      pagesContainer.innerHTML = '<div style="color:#f87171;padding:1rem;text-align:center;">⚠️ Impossibile aprire il PDF. Usa il bottone Scarica.</div>';
+    });
+
+  } else {
+    // Fallback senza PDF.js: iframe
+    pagesContainer.innerHTML = '';
+    if (blobUrl && !isIOS) {
+      const iframe = document.createElement('iframe');
+      iframe.src = blobUrl;
+      iframe.style.cssText = 'width:100%;height:80vh;border:none;border-radius:0.5rem;background:#fff;';
+      iframe.title = ticket.name;
+      pagesContainer.appendChild(iframe);
+    } else {
+      pagesContainer.innerHTML = '<div style="color:#ccc;padding:1rem;text-align:center;">Usa il bottone sopra per aprire il PDF.</div>';
+    }
+  }
 }
 
 function closeViewer() {
@@ -2068,6 +2127,17 @@ function openTicketModal() {
 }
 function closeModal(id) {
   document.getElementById(id).classList.add('hidden');
+}
+
+function openHotel() {
+  const c = tripData.cities[currentCityIdx];
+  if (!c) { showToast('Nessuna città configurata', 'error'); return; }
+  if (c.hotelMaps) { window.open(c.hotelMaps, '_blank', 'noopener,noreferrer'); return; }
+  if (c.hotelAddress) {
+    window.open('https://maps.google.com/?q=' + encodeURIComponent(c.hotelAddress), '_blank', 'noopener,noreferrer');
+    return;
+  }
+  showToast('Configura prima l\'indirizzo dell\'hotel', 'error');
 }
 
 function openAttractions() {
