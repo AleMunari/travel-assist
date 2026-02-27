@@ -753,13 +753,33 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="hotel-address" class="form-label">Nome Hotel</label>
-            <input type="text" id="hotel-address" name="hotel-address" class="form-input" placeholder="es. Hotel Roma Centro" autocomplete="off" />
+            <label for="hotel-address" class="form-label">🏨 Nome Hotel</label>
+            <input type="text" id="hotel-address" name="hotel-address" class="form-input"
+              placeholder="es. Hotel Roma Centro" autocomplete="off"
+              oninput="handleHotelInput(this)" />
           </div>
           <div class="form-group">
             <label for="hotel-maps" class="form-label">🗺 Link Google Maps Hotel</label>
-            <input type="url" id="hotel-maps" name="hotel-maps" class="form-input" placeholder="https://maps.google.com/..." />
-            <p class="form-hint">Apri Maps → cerca hotel → copia il link dalla barra in alto</p>
+            <input type="url" id="hotel-maps" name="hotel-maps" class="form-input"
+              placeholder="https://maps.google.com/..."
+              oninput="updateHotelDoneBtn(this)" />
+            <div class="slot-actions-maps" style="margin-top:0.5rem;">
+              <button type="button" class="btn--maps-search" onclick="searchHotelOnMaps()">🔍 Cerca su Maps</button>
+              <button type="button" class="btn--maps-paste" onclick="pasteHotelMapLink()">📋 Incolla link</button>
+            </div>
+            <div id="hotel-done-wrap" class="hidden" style="margin-top:0.625rem;">
+              <button type="button" id="hotel-done-btn"
+                onclick="confirmHotelLink()"
+                style="width:100%;min-height:4rem;background:var(--accent-go);color:#fff;
+                       border:none;border-radius:var(--radius-md);font-family:inherit;
+                       font-size:var(--text-base);font-weight:900;cursor:pointer;">
+                ✓ Fatto, link salvato!
+              </button>
+            </div>
+            <div class="maps-hint" style="margin-top:0.5rem;">
+              💡 Cerca su Maps → tocca il nome dell'hotel →
+              <strong>Condividi ↑ → Copia link</strong> → torna qui → Incolla link
+            </div>
           </div>
           <button type="submit" class="btn btn--primary btn--full" id="setup-submit-btn">Avanti →</button>
         </form>
@@ -2262,11 +2282,77 @@ function exportToMail() {
   const cityNames = cities.map(c => c.city).filter(Boolean).join(', ');
   const subject = `Itinerario viaggio: ${cityNames || 'destinazione'}`;
   const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailtoLink;
+
+  // iOS Safari ha un limite ~8000 caratteri per mailto — se supera, apre senza body
+  if (mailtoLink.length > 8000) {
+    // Tenta comunque, poi mostra il testo per copia manuale
+    try { window.location.href = mailtoLink.substring(0, 8000); } catch(e) {}
+    showToast('Itinerario lungo: copia il testo dal campo qui sotto', 'info');
+    // Mostra modal di testo copiabile
+    showMailFallback(subject, body);
+  } else {
+    window.location.href = mailtoLink;
+  }
   announce('Email aperta');
 }
 
-// ---- RESET ----
+function showMailFallback(subject, body) {
+  const existing = document.getElementById('modal-mail-fallback');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-mail-fallback';
+  modal.className = 'modal';
+  modal.style.zIndex = '600';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.addEventListener('click', () => modal.remove());
+
+  const content = document.createElement('div');
+  content.className = 'modal-content';
+  content.style.cssText = 'max-height:85vh;overflow-y:auto;';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'modal-close';
+  closeBtn.setAttribute('aria-label', 'Chiudi');
+  closeBtn.textContent = '✕';
+  closeBtn.addEventListener('click', () => modal.remove());
+
+  const title = document.createElement('h2');
+  title.style.marginBottom = '0.75rem';
+  title.textContent = '📧 Testo itinerario';
+
+  const subjEl = document.createElement('p');
+  subjEl.style.cssText = 'font-size:var(--text-xs);color:var(--text-muted);margin-bottom:0.75rem;';
+  subjEl.innerHTML = 'Oggetto: <strong>' + esc(subject) + '</strong>';
+
+  const textarea = document.createElement('textarea');
+  textarea.readOnly = true;
+  textarea.style.cssText = 'width:100%;height:40vh;font-size:var(--text-xs);font-family:monospace;border:2px solid var(--border-color);border-radius:var(--radius-md);padding:0.75rem;background:var(--bg-elevated);color:var(--text-primary);resize:none;';
+  textarea.value = body;
+  textarea.addEventListener('click', () => textarea.select());
+
+  const copyBtn = document.createElement('button');
+  copyBtn.style.cssText = 'width:100%;min-height:4rem;margin-top:0.75rem;background:var(--header-bg);color:#fff;border:none;border-radius:var(--radius-md);font-family:inherit;font-size:var(--text-base);font-weight:900;cursor:pointer;';
+  copyBtn.textContent = '📋 Copia tutto il testo';
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(body)
+      .then(() => showToast('Copiato ✓', 'success'))
+      .catch(() => { textarea.select(); showToast('Seleziona e copia manualmente', 'info'); });
+  });
+
+  content.appendChild(closeBtn);
+  content.appendChild(title);
+  content.appendChild(subjEl);
+  content.appendChild(textarea);
+  content.appendChild(copyBtn);
+  modal.appendChild(overlay);
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+}
+
+
 function resetTrip() {
   if (!confirm('Sei sicuro? Tutti i dati del viaggio saranno cancellati.')) return;
   localStorage.removeItem('travelAssist_v2');
@@ -2529,6 +2615,151 @@ function confirmTime() {
   closeTimePicker();
   showToast('Ora salvata ✓', 'success');
   announce('Ora confermata: ' + timeStr);
+}
+
+function updateHotelDoneBtn(inputEl) {
+  const wrap = document.getElementById('hotel-done-wrap');
+  if (!wrap) return;
+  const val = inputEl.value.trim();
+  if (val.includes('maps') || val.includes('goo.gl') || val.startsWith('http')) {
+    wrap.classList.remove('hidden');
+  } else {
+    wrap.classList.add('hidden');
+    resetHotelDoneBtn();
+  }
+}
+
+function confirmHotelLink() {
+  const btn = document.getElementById('hotel-done-btn');
+  if (!btn) return;
+  btn.textContent = '✓ Link confermato!';
+  btn.style.background = '#15803d';
+  btn.disabled = true;
+  showToast('Link hotel salvato ✓', 'success');
+  announce('Link hotel confermato');
+}
+
+function resetHotelDoneBtn() {
+  const btn = document.getElementById('hotel-done-btn');
+  if (!btn) return;
+  btn.textContent = '✓ Fatto, link salvato!';
+  btn.style.background = 'var(--accent-go)';
+  btn.disabled = false;
+}
+
+function searchHotelOnMaps() {
+  const q = document.getElementById('hotel-address').value.trim();
+  if (!q) { showToast('Scrivi prima il nome dell\'hotel', 'error'); return; }
+  const city = document.getElementById('city').value.trim();
+  const query = city ? q + ', ' + city : q;
+  window.open('https://www.google.com/maps/search/' + encodeURIComponent(query), '_blank', 'noopener,noreferrer');
+  showToast('Copia il link da Maps e incollalo nel campo Link Maps', 'info');
+}
+
+async function pasteHotelMapLink() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text || (!text.includes('maps') && !text.includes('goo.gl'))) {
+      showToast('Negli appunti non c\'è un link Maps. Copia prima il link da Maps.', 'error');
+      return;
+    }
+    const mapsInput = document.getElementById('hotel-maps');
+    if (mapsInput) {
+      mapsInput.value = text.trim();
+      updateHotelDoneBtn(mapsInput);
+      showToast('Link Maps hotel incollato — tocca "Fatto" per confermare ✓', 'success');
+      announce('Link Maps hotel incollato');
+    }
+  } catch(e) {
+    const mapsInput = document.getElementById('hotel-maps');
+    if (mapsInput) {
+      mapsInput.focus();
+      showToast('Premi e tieni premuto il campo per incollare', 'info');
+    }
+  }
+}
+
+let _hotelSearchTimeout = null;
+function handleHotelInput(inputEl) {
+  clearTimeout(_hotelSearchTimeout);
+  const q = inputEl.value.trim();
+  if (q.length < 2) { closeDropdown(); return; }
+  // Riusa il dropdown esistente posizionandolo sull'input hotel
+  dropdownDayIdx = 'hotel';
+  dropdownSlotIdx = 'hotel';
+  showDropdownLoading(inputEl);
+  _hotelSearchTimeout = setTimeout(() => fetchHotelPlaces(q, inputEl), 400);
+}
+
+function fetchHotelPlaces(query, inputEl) {
+  const city = document.getElementById('city').value.trim();
+  const search = city ? query + ', ' + city : query;
+  const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(search) + '&limit=5&accept-language=it';
+  fetch(url, { headers: { 'Accept-Language': 'it' } })
+    .then(r => r.json())
+    .then(results => renderHotelDropdown(results, inputEl))
+    .catch(() => renderDropdownOffline(query, 'hotel', 'hotel', inputEl));
+}
+
+function renderHotelDropdown(results, inputEl) {
+  const dd = document.getElementById('places-dropdown');
+  dd.innerHTML = '';
+  if (!results.length) {
+    dd.innerHTML = `<div class="place-option" tabindex="0" role="option"
+      onclick="searchHotelOnMaps()"
+      onkeydown="if(event.key==='Enter')this.click()">
+      <span class="place-option-icon">🗺</span>
+      <div class="place-option-text">
+        <span class="place-option-name">Cerca su Google Maps</span>
+        <span class="place-option-detail">${esc(inputEl.value)}</span>
+      </div></div>`;
+    positionDropdown(inputEl);
+    dd.classList.remove('hidden');
+    return;
+  }
+  results.forEach(place => {
+    const name = place.display_name.split(',')[0];
+    const detail = place.display_name.split(',').slice(1, 3).join(',').trim();
+    const mapsLink = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place.display_name);
+    const opt = document.createElement('div');
+    opt.className = 'place-option';
+    opt.setAttribute('role', 'option');
+    opt.setAttribute('tabindex', '0');
+    opt.innerHTML = `<span class="place-option-icon">🏨</span>
+      <div class="place-option-text">
+        <span class="place-option-name">${esc(name)}</span>
+        <span class="place-option-detail">${esc(detail)}</span>
+      </div>`;
+    opt.addEventListener('click', () => {
+      document.getElementById('hotel-address').value = name;
+      document.getElementById('hotel-maps').value = mapsLink;
+      closeDropdown();
+      showToast('Hotel selezionato ✓', 'success');
+      announce(name + ' selezionato');
+    });
+    opt.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') opt.click();
+      if (e.key === 'ArrowDown') opt.nextElementSibling?.focus();
+      if (e.key === 'ArrowUp') opt.previousElementSibling?.focus() || inputEl.focus();
+      if (e.key === 'Escape') { closeDropdown(); inputEl.focus(); }
+    });
+    dd.appendChild(opt);
+  });
+  // Opzione "apri Maps"
+  const mapsOpt = document.createElement('div');
+  mapsOpt.className = 'place-option';
+  mapsOpt.setAttribute('tabindex', '0');
+  mapsOpt.setAttribute('role', 'option');
+  mapsOpt.innerHTML = `<span class="place-option-icon">🗺</span>
+    <div class="place-option-text">
+      <span class="place-option-name">Apri Google Maps per cercare</span>
+      <span class="place-option-detail">${esc(inputEl.value)}</span>
+    </div>`;
+  mapsOpt.addEventListener('click', () => { closeDropdown(); searchHotelOnMaps(); });
+  mapsOpt.addEventListener('keydown', e => { if (e.key === 'Enter') mapsOpt.click(); });
+  dd.appendChild(mapsOpt);
+  positionDropdown(inputEl);
+  dd.classList.remove('hidden');
 }
 
 // ---- SERVICE WORKER INLINE ----
