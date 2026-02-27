@@ -396,6 +396,168 @@
     @keyframes toastIn  { from { opacity:0; transform:translateY(1rem); } to { opacity:1; transform:translateY(0); } }
     @keyframes toastOut { to   { opacity:0; transform:translateY(-1rem); } }
 
+    /* ============================================================
+       PICKER BUTTON
+       ============================================================ */
+    .picker-btn {
+      width: 100%; min-height: 5rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--bg-elevated); border: 2px solid var(--border-color);
+      border-radius: var(--radius-md); padding: 0.875rem 1.25rem;
+      cursor: pointer; font-family: inherit; text-align: left;
+      transition: all 0.15s ease;
+    }
+    .picker-btn:hover, .picker-btn:focus-visible {
+      border-color: var(--header-bg);
+      background: rgba(29,78,216,0.07);
+      box-shadow: 0 0 0 3px rgba(29,78,216,0.15);
+    }
+    .picker-btn.has-value { border-color: var(--accent-go); background: rgba(22,163,74,0.06); }
+    .picker-icon { font-size: 2rem; flex-shrink: 0; }
+    .picker-val { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+    .picker-btn:not(.has-value) .picker-val { color: #94a3b8; font-weight: 600; }
+
+    /* ============================================================
+       DATE/TIME PICKER MODAL
+       ============================================================ */
+    .picker-modal {
+      position: fixed; inset: 0; z-index: 400;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .picker-modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    }
+    .picker-modal-content {
+      position: relative; z-index: 1;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border: 2px solid var(--border-color);
+      width: 100%; max-width: 480px;
+      max-height: 90vh; overflow-y: auto;
+      padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0));
+      box-shadow: 0 -8px 40px rgba(30,64,175,0.2);
+    }
+    .picker-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .picker-modal-title {
+      font-size: var(--text-xl); font-weight: 900; color: var(--header-bg);
+    }
+    .picker-modal-close {
+      background: var(--bg-elevated); border: 2px solid var(--border-color);
+      color: var(--text-primary); border-radius: 50%;
+      width: 3rem; height: 3rem; font-size: 1.25rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.15s;
+    }
+    .picker-modal-close:hover { background: var(--accent-danger); color: #fff; border-color: var(--accent-danger); }
+
+    /* Calendar */
+    .cal-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .cal-nav-btn {
+      background: var(--bg-elevated); border: 2px solid var(--border-color);
+      color: var(--text-primary); border-radius: var(--radius-sm);
+      width: 3.5rem; height: 3.5rem; font-size: 1.5rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; font-weight: 900;
+    }
+    .cal-nav-btn:hover { background: var(--header-bg); color: #fff; border-color: var(--header-bg); }
+    .cal-month-label {
+      font-size: var(--text-lg); font-weight: 900; color: var(--text-primary);
+      text-transform: capitalize; text-align: center; flex: 1;
+    }
+    .cal-weekdays {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 0.375rem;
+    }
+    .cal-wday {
+      text-align: center; font-size: var(--text-xs); font-weight: 700;
+      color: var(--text-muted); padding: 0.25rem 0;
+    }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+    }
+    .cal-day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: var(--text-sm); font-weight: 700; border-radius: var(--radius-sm);
+      border: 2px solid transparent; cursor: pointer; transition: all 0.12s;
+      background: none; font-family: inherit; color: var(--text-primary);
+      min-height: 3rem;
+    }
+    .cal-day:hover:not(:disabled) { background: var(--bg-secondary); border-color: var(--border-color); }
+    .cal-day.today { border-color: var(--accent-secondary); color: var(--accent-secondary); }
+    .cal-day.selected { background: var(--header-bg) !important; color: #fff !important; border-color: var(--header-bg) !important; }
+    .cal-day:disabled { color: #d1d5db; cursor: default; }
+    .cal-day.empty { cursor: default; }
+
+    /* Time picker */
+    .time-picker-wrap {
+      display: flex; align-items: center; justify-content: center;
+      gap: 1rem; margin: 0.5rem 0 1.5rem;
+    }
+    .time-sep {
+      font-size: var(--text-3xl); font-weight: 900; color: var(--text-secondary); line-height: 1;
+    }
+    .time-scroll-col {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      position: relative;
+    }
+    .time-scroll-label {
+      font-size: var(--text-xs); font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;
+    }
+    .time-drum {
+      width: 6rem; height: 15rem;
+      overflow-y: scroll; scroll-snap-type: y mandatory;
+      scrollbar-width: none; -ms-overflow-style: none;
+      border: 2px solid var(--border-color); border-radius: var(--radius-md);
+      background: var(--bg-elevated);
+      position: relative;
+    }
+    .time-drum::-webkit-scrollbar { display: none; }
+    .time-drum::before, .time-drum::after {
+      content: ''; position: sticky; display: block;
+      left: 0; right: 0; height: 5rem; z-index: 2; pointer-events: none;
+    }
+    .time-drum::before {
+      top: 0;
+      background: linear-gradient(to bottom, var(--bg-elevated) 30%, transparent);
+    }
+    .time-drum::after {
+      bottom: 0;
+      background: linear-gradient(to top, var(--bg-elevated) 30%, transparent);
+    }
+    .time-drum-item {
+      height: 5rem; scroll-snap-align: center;
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--text-xl); font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-primary); cursor: pointer;
+      transition: color 0.1s;
+    }
+    .time-drum-item:hover { color: var(--header-bg); }
+    .time-drum-selector {
+      position: absolute; top: 50%; left: 0; right: 0;
+      transform: translateY(-50%); height: 5rem;
+      border-top: 3px solid var(--accent-primary);
+      border-bottom: 3px solid var(--accent-primary);
+      pointer-events: none; border-radius: 0;
+    }
+    .picker-confirm-btn {
+      width: 100%; background: var(--header-bg); color: #fff;
+      border: none; border-radius: var(--radius-md);
+      min-height: 5rem; font-family: inherit;
+      font-size: var(--text-lg); font-weight: 900;
+      cursor: pointer; transition: all 0.15s;
+      margin-top: 0.5rem;
+    }
+    .picker-confirm-btn:hover { background: #1e40af; transform: translateY(-1px); }
+
     /* RESPONSIVE */
     @media (max-width: 520px) {
       .form-row { grid-template-columns: 1fr; }
@@ -453,45 +615,37 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Data Partenza</label>
-            <div class="seg-date" id="seg-departure-date">
-              <input class="seg-input" type="number" placeholder="GG" min="1" max="31" maxlength="2" inputmode="numeric" aria-label="Giorno partenza" />
-              <span class="seg-sep">/</span>
-              <input class="seg-input" type="number" placeholder="MM" min="1" max="12" maxlength="2" inputmode="numeric" aria-label="Mese partenza" />
-              <span class="seg-sep">/</span>
-              <input class="seg-input seg-input--year" type="number" placeholder="AAAA" min="2024" max="2099" maxlength="4" inputmode="numeric" aria-label="Anno partenza" />
-            </div>
+            <label class="form-label">📅 Data Partenza</label>
+            <button type="button" class="picker-btn" id="btn-departure-date" onclick="openDatePicker('departure-date')" aria-label="Scegli data partenza">
+              <span class="picker-icon">📅</span>
+              <span class="picker-val" id="display-departure-date">Tocca per scegliere</span>
+            </button>
             <input type="hidden" id="departure-date" name="departure-date" />
           </div>
           <div class="form-group">
-            <label class="form-label">Ora Partenza</label>
-            <div class="seg-time" id="seg-departure-time">
-              <input class="seg-input" type="number" placeholder="HH" min="0" max="23" maxlength="2" inputmode="numeric" aria-label="Ore partenza" />
-              <span class="seg-sep">:</span>
-              <input class="seg-input" type="number" placeholder="MM" min="0" max="59" maxlength="2" inputmode="numeric" aria-label="Minuti partenza" />
-            </div>
+            <label class="form-label">🕐 Ora Partenza</label>
+            <button type="button" class="picker-btn" id="btn-departure-time" onclick="openTimePicker('departure-time')" aria-label="Scegli ora partenza">
+              <span class="picker-icon">🕐</span>
+              <span class="picker-val" id="display-departure-time">Tocca per scegliere</span>
+            </button>
             <input type="hidden" id="departure-time" name="departure-time" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Data Ritorno</label>
-            <div class="seg-date" id="seg-return-date">
-              <input class="seg-input" type="number" placeholder="GG" min="1" max="31" maxlength="2" inputmode="numeric" aria-label="Giorno ritorno" />
-              <span class="seg-sep">/</span>
-              <input class="seg-input" type="number" placeholder="MM" min="1" max="12" maxlength="2" inputmode="numeric" aria-label="Mese ritorno" />
-              <span class="seg-sep">/</span>
-              <input class="seg-input seg-input--year" type="number" placeholder="AAAA" min="2024" max="2099" maxlength="4" inputmode="numeric" aria-label="Anno ritorno" />
-            </div>
+            <label class="form-label">📅 Data Ritorno</label>
+            <button type="button" class="picker-btn" id="btn-return-date" onclick="openDatePicker('return-date')" aria-label="Scegli data ritorno">
+              <span class="picker-icon">📅</span>
+              <span class="picker-val" id="display-return-date">Tocca per scegliere</span>
+            </button>
             <input type="hidden" id="return-date" name="return-date" />
           </div>
           <div class="form-group">
-            <label class="form-label">Ora Ritorno</label>
-            <div class="seg-time" id="seg-return-time">
-              <input class="seg-input" type="number" placeholder="HH" min="0" max="23" maxlength="2" inputmode="numeric" aria-label="Ore ritorno" />
-              <span class="seg-sep">:</span>
-              <input class="seg-input" type="number" placeholder="MM" min="0" max="59" maxlength="2" inputmode="numeric" aria-label="Minuti ritorno" />
-            </div>
+            <label class="form-label">🕐 Ora Ritorno</label>
+            <button type="button" class="picker-btn" id="btn-return-time" onclick="openTimePicker('return-time')" aria-label="Scegli ora ritorno">
+              <span class="picker-icon">🕐</span>
+              <span class="picker-val" id="display-return-time">Tocca per scegliere</span>
+            </button>
             <input type="hidden" id="return-time" name="return-time" />
           </div>
         </div>
@@ -584,6 +738,59 @@
 
 </main>
 
+<!-- MODAL: Calendario Date -->
+<div id="modal-date-picker" class="picker-modal hidden" role="dialog" aria-modal="true" aria-labelledby="date-picker-title">
+  <div class="picker-modal-overlay" onclick="closeDatePicker()"></div>
+  <div class="picker-modal-content">
+    <div class="picker-modal-header">
+      <span class="picker-modal-title" id="date-picker-title">📅 Scegli la data</span>
+      <button class="picker-modal-close" onclick="closeDatePicker()" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrevMonth()" aria-label="Mese precedente">‹</button>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <button class="cal-nav-btn" onclick="calNextMonth()" aria-label="Mese successivo">›</button>
+    </div>
+    <div class="cal-weekdays">
+      <div class="cal-wday">Lu</div><div class="cal-wday">Ma</div>
+      <div class="cal-wday">Me</div><div class="cal-wday">Gi</div>
+      <div class="cal-wday">Ve</div><div class="cal-wday">Sa</div>
+      <div class="cal-wday">Do</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <button class="picker-confirm-btn" id="cal-confirm-btn" onclick="confirmDate()" style="margin-top:1.25rem">✓ Conferma data</button>
+  </div>
+</div>
+
+<!-- MODAL: Orologio Ora -->
+<div id="modal-time-picker" class="picker-modal hidden" role="dialog" aria-modal="true" aria-labelledby="time-picker-title">
+  <div class="picker-modal-overlay" onclick="closeTimePicker()"></div>
+  <div class="picker-modal-content">
+    <div class="picker-modal-header">
+      <span class="picker-modal-title" id="time-picker-title">🕐 Scegli l'ora</span>
+      <button class="picker-modal-close" onclick="closeTimePicker()" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="time-picker-wrap">
+      <div class="time-scroll-col">
+        <div class="time-scroll-label">Ore</div>
+        <div style="position:relative;">
+          <div class="time-drum" id="drum-hours"></div>
+          <div class="time-drum-selector"></div>
+        </div>
+      </div>
+      <div class="time-sep">:</div>
+      <div class="time-scroll-col">
+        <div class="time-scroll-label">Minuti</div>
+        <div style="position:relative;">
+          <div class="time-drum" id="drum-minutes"></div>
+          <div class="time-drum-selector"></div>
+        </div>
+      </div>
+    </div>
+    <button class="picker-confirm-btn" onclick="confirmTime()">✓ Conferma ora</button>
+  </div>
+</div>
+
 <!-- MODAL: Biglietti extra -->
 <div id="modal-ticket" class="modal hidden" role="dialog" aria-labelledby="modal-ticket-title" aria-modal="true">
   <div class="modal-overlay" onclick="closeModal('modal-ticket')"></div>
@@ -660,98 +867,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('setup-form').addEventListener('submit', handleSetup);
 
-  // ---- SEGMENTED DATE/TIME INPUTS ----
-  function setupSegTime(containerId, hiddenId) {
-    const c = document.getElementById(containerId);
-    if (!c) return;
-    const [hh, mm] = c.querySelectorAll('.seg-input');
-    const hidden = document.getElementById(hiddenId);
-
-    function update() {
-      const h = hh.value.padStart(2,'0');
-      const m = mm.value.padStart(2,'0');
-      if (hh.value !== '' && mm.value !== '') hidden.value = `${h}:${m}`;
-    }
-
-    hh.addEventListener('input', () => {
-      if (hh.value.length >= 2 || parseInt(hh.value) > 2) {
-        if (parseInt(hh.value) > 23) hh.value = '23';
-        mm.focus(); mm.select();
-      }
-      update();
-    });
-    mm.addEventListener('input', () => {
-      if (parseInt(mm.value) > 59) mm.value = '59';
-      update();
-    });
+  // Precompila i display se ci sono dati salvati
+  if (tripData.departureDate) {
+    setDateDisplay('departure-date', tripData.departureDate);
   }
-
-  function setupSegDate(containerId, hiddenId) {
-    const c = document.getElementById(containerId);
-    if (!c) return;
-    const [dd, mo, yy] = c.querySelectorAll('.seg-input');
-    const hidden = document.getElementById(hiddenId);
-
-    function update() {
-      const d = dd.value.padStart(2,'0');
-      const m = mo.value.padStart(2,'0');
-      const y = yy.value;
-      if (dd.value !== '' && mo.value !== '' && yy.value.length === 4) {
-        hidden.value = `${y}-${m}-${d}`;
-      }
-    }
-
-    dd.addEventListener('input', () => {
-      if (dd.value.length >= 2 || parseInt(dd.value) > 3) {
-        if (parseInt(dd.value) > 31) dd.value = '31';
-        mo.focus(); mo.select();
-      }
-      update();
-    });
-    mo.addEventListener('input', () => {
-      if (mo.value.length >= 2 || parseInt(mo.value) > 1) {
-        if (parseInt(mo.value) > 12) mo.value = '12';
-        yy.focus(); yy.select();
-      }
-      update();
-    });
-    yy.addEventListener('input', () => {
-      if (yy.value.length > 4) yy.value = yy.value.slice(0,4);
-      update();
-    });
+  if (tripData.returnDate) {
+    setDateDisplay('return-date', tripData.returnDate);
   }
-
-  // Prefill oggi
-  const todayD = new Date();
-  function fillSegDate(containerId, hiddenId, date) {
-    const c = document.getElementById(containerId);
-    if (!c) return;
-    const [dd, mo, yy] = c.querySelectorAll('.seg-input');
-    dd.value = date.getDate();
-    mo.value = date.getMonth() + 1;
-    yy.value = date.getFullYear();
-    document.getElementById(hiddenId).value =
-      `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  if (tripData.departureTime) {
+    setTimeDisplay('departure-time', tripData.departureTime);
   }
-  function fillSegTime(containerId, hiddenId, h, m) {
-    const c = document.getElementById(containerId);
-    if (!c) return;
-    const [hh, mm] = c.querySelectorAll('.seg-input');
-    hh.value = String(h).padStart(2,'0');
-    mm.value = String(m).padStart(2,'0');
-    document.getElementById(hiddenId).value = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  if (tripData.returnTime) {
+    setTimeDisplay('return-time', tripData.returnTime);
   }
-
-  const now = new Date();
-  fillSegDate('seg-departure-date', 'departure-date', todayD);
-  fillSegDate('seg-return-date', 'return-date', todayD);
-  fillSegTime('seg-departure-time', 'departure-time', now.getHours(), now.getMinutes());
-  fillSegTime('seg-return-time', 'return-time', now.getHours(), now.getMinutes());
-
-  setupSegDate('seg-departure-date', 'departure-date');
-  setupSegDate('seg-return-date', 'return-date');
-  setupSegTime('seg-departure-time', 'departure-time');
-  setupSegTime('seg-return-time', 'return-time');
 
   if (tripData.city) {
     renderDashboard();
@@ -792,31 +920,16 @@ function showSection(name) {
 }
 
 // ---- SETUP ----
-function readSegDate(containerId) {
-  const c = document.getElementById(containerId);
-  if (!c) return '';
-  const [dd, mo, yy] = c.querySelectorAll('.seg-input');
-  if (!dd.value || !mo.value || !yy.value || String(yy.value).length < 4) return '';
-  return `${yy.value}-${String(mo.value).padStart(2,'0')}-${String(dd.value).padStart(2,'0')}`;
-}
-function readSegTime(containerId) {
-  const c = document.getElementById(containerId);
-  if (!c) return '';
-  const [hh, mm] = c.querySelectorAll('.seg-input');
-  if (hh.value === '' || mm.value === '') return '';
-  return `${String(hh.value).padStart(2,'0')}:${String(mm.value).padStart(2,'0')}`;
-}
-
 function handleSetup(e) {
   e.preventDefault();
   const f = e.target;
   const city = f.city.value.trim();
   if (!city) { showToast('Inserisci la città di destinazione', 'error'); f.city.focus(); return; }
 
-  const depDate = readSegDate('seg-departure-date');
-  const retDate = readSegDate('seg-return-date');
-  const depTime = readSegTime('seg-departure-time');
-  const retTime = readSegTime('seg-return-time');
+  const depDate = document.getElementById('departure-date').value;
+  const retDate = document.getElementById('return-date').value;
+  const depTime = document.getElementById('departure-time').value;
+  const retTime = document.getElementById('return-time').value;
 
   if (!depDate) { showToast('Inserisci la data di partenza', 'error'); return; }
   if (!retDate) { showToast('Inserisci la data di ritorno', 'error'); return; }
@@ -1801,6 +1914,216 @@ document.addEventListener('keydown', e => {
     closeDropdown();
   }
 });
+
+// ============================================================
+// DATE PICKER
+// ============================================================
+let _datePickerTarget = null; // 'departure-date' | 'return-date'
+let _calYear = 0;
+let _calMonth = 0;
+let _calSelected = null; // 'YYYY-MM-DD'
+
+const MESI_NOMI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                   'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const GIORNI_NOMI = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+
+function openDatePicker(fieldId) {
+  _datePickerTarget = fieldId;
+  const existing = document.getElementById(fieldId).value;
+  const today = new Date();
+  if (existing) {
+    const [y,m,d] = existing.split('-').map(Number);
+    _calYear = y; _calMonth = m - 1; _calSelected = existing;
+  } else {
+    _calYear = today.getFullYear(); _calMonth = today.getMonth(); _calSelected = null;
+  }
+  renderCalendar();
+  document.getElementById('modal-date-picker').classList.remove('hidden');
+  announce('Calendario aperto');
+}
+
+function closeDatePicker() {
+  document.getElementById('modal-date-picker').classList.add('hidden');
+}
+
+function calPrevMonth() {
+  _calMonth--;
+  if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+  renderCalendar();
+}
+function calNextMonth() {
+  _calMonth++;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  document.getElementById('cal-month-label').textContent = MESI_NOMI[_calMonth] + ' ' + _calYear;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  // Giorno settimana del primo del mese (0=Dom, 1=Lun...)
+  const firstDay = new Date(_calYear, _calMonth, 1).getDay();
+  // Converti: 0(Dom)→6, 1(Lun)→0, ..., 6(Sab)→5
+  const startOffset = (firstDay === 0) ? 6 : firstDay - 1;
+
+  const daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+
+  // Celle vuote prima
+  for (let i = 0; i < startOffset; i++) {
+    const empty = document.createElement('button');
+    empty.className = 'cal-day empty'; empty.disabled = true; empty.type = 'button';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = _calYear + '-' +
+      String(_calMonth + 1).padStart(2,'0') + '-' +
+      String(d).padStart(2,'0');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cal-day';
+    btn.textContent = d;
+    btn.setAttribute('aria-label', d + ' ' + MESI_NOMI[_calMonth] + ' ' + _calYear);
+    if (dateStr === todayStr) btn.classList.add('today');
+    if (dateStr === _calSelected) btn.classList.add('selected');
+    btn.addEventListener('click', () => {
+      _calSelected = dateStr;
+      grid.querySelectorAll('.cal-day').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      announce(d + ' ' + MESI_NOMI[_calMonth] + ' selezionato');
+    });
+    grid.appendChild(btn);
+  }
+}
+
+function setDateDisplay(fieldId, dateStr) {
+  if (!dateStr) return;
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  const label = GIORNI_NOMI[dt.getDay()] + ' ' + d + ' ' + MESI_NOMI[m-1] + ' ' + y;
+  const btn = document.getElementById('btn-' + fieldId);
+  const disp = document.getElementById('display-' + fieldId);
+  if (disp) disp.textContent = label;
+  if (btn) btn.classList.add('has-value');
+  document.getElementById(fieldId).value = dateStr;
+}
+
+function confirmDate() {
+  if (!_calSelected) { showToast('Seleziona un giorno', 'error'); return; }
+  setDateDisplay(_datePickerTarget, _calSelected);
+  closeDatePicker();
+  showToast('Data salvata ✓', 'success');
+  announce('Data confermata: ' + _calSelected);
+}
+
+// ============================================================
+// TIME PICKER
+// ============================================================
+let _timePickerTarget = null;
+let _drumHourVal = 8;
+let _drumMinVal = 0;
+
+function openTimePicker(fieldId) {
+  _timePickerTarget = fieldId;
+  const existing = document.getElementById(fieldId).value;
+  if (existing) {
+    const [h,m] = existing.split(':').map(Number);
+    _drumHourVal = h; _drumMinVal = m;
+  } else {
+    _drumHourVal = 8; _drumMinVal = 0;
+  }
+  buildDrum('drum-hours', 24, _drumHourVal);
+  buildDrum('drum-minutes', 60, _drumMinVal, 5);
+  document.getElementById('modal-time-picker').classList.remove('hidden');
+  // Scroll to selected after render
+  setTimeout(() => {
+    scrollDrumToValue('drum-hours', _drumHourVal, 1);
+    scrollDrumToValue('drum-minutes', _drumMinVal, 5);
+  }, 60);
+  announce('Selettore ora aperto');
+}
+
+function closeTimePicker() {
+  document.getElementById('modal-time-picker').classList.add('hidden');
+}
+
+function buildDrum(drumId, count, selected, step = 1) {
+  const drum = document.getElementById(drumId);
+  drum.innerHTML = '';
+  // Padding top: 2 items vuoti
+  for (let p = 0; p < 2; p++) {
+    const pad = document.createElement('div');
+    pad.className = 'time-drum-item'; pad.style.visibility = 'hidden';
+    pad.textContent = '00'; drum.appendChild(pad);
+  }
+  const values = [];
+  for (let i = 0; i < count; i += step) values.push(i);
+
+  values.forEach(v => {
+    const item = document.createElement('div');
+    item.className = 'time-drum-item';
+    item.textContent = String(v).padStart(2, '0');
+    item.dataset.value = v;
+    item.addEventListener('click', () => {
+      drum.scrollTo({ top: item.offsetTop - drum.clientHeight/2 + 40, behavior: 'smooth' });
+    });
+    drum.appendChild(item);
+  });
+  // Padding bottom
+  for (let p = 0; p < 2; p++) {
+    const pad = document.createElement('div');
+    pad.className = 'time-drum-item'; pad.style.visibility = 'hidden';
+    pad.textContent = '00'; drum.appendChild(pad);
+  }
+}
+
+function scrollDrumToValue(drumId, value, step = 1) {
+  const drum = document.getElementById(drumId);
+  const items = drum.querySelectorAll('.time-drum-item[data-value]');
+  items.forEach(item => {
+    if (parseInt(item.dataset.value) === value) {
+      const itemTop = item.offsetTop;
+      const drumCenter = drum.clientHeight / 2;
+      drum.scrollTop = itemTop - drumCenter + 40;
+    }
+  });
+}
+
+function getDrumValue(drumId, step = 1) {
+  const drum = document.getElementById(drumId);
+  const drumCenter = drum.scrollTop + drum.clientHeight / 2;
+  const items = drum.querySelectorAll('.time-drum-item[data-value]');
+  let closest = null; let minDist = Infinity;
+  items.forEach(item => {
+    const dist = Math.abs(item.offsetTop + 40 - drumCenter);
+    if (dist < minDist) { minDist = dist; closest = item; }
+  });
+  return closest ? parseInt(closest.dataset.value) : 0;
+}
+
+function setTimeDisplay(fieldId, timeStr) {
+  if (!timeStr) return;
+  const btn = document.getElementById('btn-' + fieldId);
+  const disp = document.getElementById('display-' + fieldId);
+  if (disp) disp.textContent = timeStr;
+  if (btn) btn.classList.add('has-value');
+  document.getElementById(fieldId).value = timeStr;
+}
+
+function confirmTime() {
+  const h = getDrumValue('drum-hours', 1);
+  const m = getDrumValue('drum-minutes', 5);
+  const timeStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  setTimeDisplay(_timePickerTarget, timeStr);
+  closeTimePicker();
+  showToast('Ora salvata ✓', 'success');
+  announce('Ora confermata: ' + timeStr);
+}
 
 // ---- SERVICE WORKER INLINE ----
 if ('serviceWorker' in navigator) {
