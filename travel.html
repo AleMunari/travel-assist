@@ -558,6 +558,83 @@
     }
     .picker-confirm-btn:hover { background: #1e40af; transform: translateY(-1px); }
 
+    /* ============================================================
+       MULTI-CITY — stili aggiuntivi
+       ============================================================ */
+
+    /* Selettore numero città nel setup */
+    .city-count-selector {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .city-count-btn {
+      aspect-ratio: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-size: var(--text-lg); font-weight: 900;
+      background: var(--bg-elevated); border: 2px solid var(--border-color);
+      border-radius: var(--radius-md); cursor: pointer;
+      font-family: inherit; transition: all 0.15s; min-height: 4rem;
+      color: var(--text-primary);
+    }
+    .city-count-btn:hover { border-color: var(--header-bg); background: rgba(29,78,216,0.07); }
+    .city-count-btn.selected { background: var(--header-bg); color: #fff; border-color: var(--header-bg); }
+
+    /* Wizard step indicator */
+    .setup-step-indicator {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.375rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .step-dot {
+      width: 2.5rem; height: 2.5rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--text-xs); font-weight: 900;
+      background: var(--bg-elevated); border: 2px solid var(--border-color);
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .step-dot.active { background: var(--header-bg); color: #fff; border-color: var(--header-bg); transform: scale(1.15); }
+    .step-dot.done { background: var(--accent-go); color: #fff; border-color: var(--accent-go); }
+    .step-line { flex: 1; height: 2px; background: var(--border-color); min-width: 1rem; max-width: 2rem; }
+    .step-line.done { background: var(--accent-go); }
+
+    /* Navigazione città nella dashboard */
+    .city-nav-bar {
+      display: flex; gap: 0.5rem; overflow-x: auto;
+      padding: 0 0 0.75rem; margin-bottom: 0.25rem;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .city-nav-bar::-webkit-scrollbar { display: none; }
+    .city-nav-tab {
+      flex-shrink: 0; display: flex; flex-direction: column;
+      align-items: center; gap: 0.2rem;
+      min-width: 7rem; padding: 0.625rem 0.875rem;
+      background: var(--bg-card); border: 2px solid var(--border-color);
+      border-radius: var(--radius-md); cursor: pointer;
+      font-family: inherit; transition: all 0.15s; text-align: center;
+    }
+    .city-nav-tab:hover { border-color: var(--header-bg); }
+    .city-nav-tab.active {
+      background: var(--header-bg); color: #fff;
+      border-color: var(--header-bg);
+      box-shadow: 0 4px 12px rgba(29,78,216,0.3);
+    }
+    .city-nav-tab .tab-num { font-size: var(--text-xs); font-weight: 700; opacity: 0.7; }
+    .city-nav-tab .tab-name { font-size: var(--text-sm); font-weight: 900; }
+
+    /* Bottoni prev/next città */
+    .city-nav-arrows {
+      display: flex; gap: 0.5rem; margin-bottom: 1rem;
+    }
+    .city-arrow-btn {
+      flex: 1; min-height: 4rem; display: flex; align-items: center;
+      justify-content: center; gap: 0.5rem;
+      background: var(--bg-card); border: 2px solid var(--border-color);
+      border-radius: var(--radius-md); font-family: inherit;
+      font-size: var(--text-sm); font-weight: 800; cursor: pointer;
+      color: var(--text-secondary); transition: all 0.15s;
+    }
+    .city-arrow-btn:hover { border-color: var(--header-bg); color: var(--header-bg); }
+    .city-arrow-btn:disabled { opacity: 0.35; cursor: default; }
+
     /* RESPONSIVE */
     @media (max-width: 520px) {
       .form-row { grid-template-columns: 1fr; }
@@ -607,132 +684,112 @@
   <section id="section-setup" class="section section--setup" aria-labelledby="setup-title">
     <div class="setup-card">
       <h1 id="setup-title" class="setup-title">Benvenuto in Travel Assist ✈️</h1>
-      <p class="setup-subtitle">Configura il tuo viaggio per iniziare</p>
-      <form id="setup-form" novalidate>
-        <div class="form-group">
-          <label for="city" class="form-label">Città di destinazione</label>
-          <input type="text" id="city" name="city" class="form-input" placeholder="es. Roma" required aria-required="true" autocomplete="off" />
+      <p class="setup-subtitle">Quante città visiterai in questo viaggio?</p>
+
+      <!-- Step 1: scegli numero città -->
+      <div id="setup-step-choose-count">
+        <div class="city-count-selector" role="group" aria-label="Numero di città">
+          <button type="button" class="city-count-btn" onclick="selectCityCount(1)">1</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(2)">2</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(3)">3</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(4)">4</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(5)">5</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(6)">6</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(7)">7</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(8)">8</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(9)">9</button>
+          <button type="button" class="city-count-btn" onclick="selectCityCount(10)">10</button>
         </div>
-        <div class="form-row">
+        <p class="form-hint" style="margin-top:0.75rem">Tocca il numero di città che visiterai</p>
+      </div>
+
+      <!-- Step 2+: wizard per ogni città -->
+      <div id="setup-step-city" class="hidden">
+        <div class="setup-step-indicator" id="setup-step-dots"></div>
+        <div id="setup-city-form-title" class="setup-subtitle" style="font-size:var(--text-lg);font-weight:900;color:var(--header-bg);margin-bottom:1rem;"></div>
+
+        <form id="setup-form" novalidate>
           <div class="form-group">
-            <label class="form-label">📅 Data Partenza</label>
-            <button type="button" class="picker-btn" id="btn-departure-date" onclick="openDatePicker('departure-date')" aria-label="Scegli data partenza">
-              <span class="picker-icon">📅</span>
-              <span class="picker-val" id="display-departure-date">Tocca per scegliere</span>
-            </button>
-            <input type="hidden" id="departure-date" name="departure-date" />
+            <label for="city" class="form-label">Città di destinazione</label>
+            <input type="text" id="city" name="city" class="form-input" placeholder="es. Roma" required aria-required="true" autocomplete="off" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">📅 Data Arrivo</label>
+              <button type="button" class="picker-btn" id="btn-departure-date" onclick="openDatePicker('departure-date')" aria-label="Scegli data arrivo">
+                <span class="picker-icon">📅</span>
+                <span class="picker-val" id="display-departure-date">Tocca per scegliere</span>
+              </button>
+              <input type="hidden" id="departure-date" name="departure-date" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">🕐 Ora Arrivo</label>
+              <button type="button" class="picker-btn" id="btn-departure-time" onclick="openTimePicker('departure-time')" aria-label="Scegli ora arrivo">
+                <span class="picker-icon">🕐</span>
+                <span class="picker-val" id="display-departure-time">Tocca per scegliere</span>
+              </button>
+              <input type="hidden" id="departure-time" name="departure-time" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">📅 Data Partenza</label>
+              <button type="button" class="picker-btn" id="btn-return-date" onclick="openDatePicker('return-date')" aria-label="Scegli data partenza">
+                <span class="picker-icon">📅</span>
+                <span class="picker-val" id="display-return-date">Tocca per scegliere</span>
+              </button>
+              <input type="hidden" id="return-date" name="return-date" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">🕐 Ora Partenza</label>
+              <button type="button" class="picker-btn" id="btn-return-time" onclick="openTimePicker('return-time')" aria-label="Scegli ora partenza">
+                <span class="picker-icon">🕐</span>
+                <span class="picker-val" id="display-return-time">Tocca per scegliere</span>
+              </button>
+              <input type="hidden" id="return-time" name="return-time" />
+            </div>
           </div>
           <div class="form-group">
-            <label class="form-label">🕐 Ora Partenza</label>
-            <button type="button" class="picker-btn" id="btn-departure-time" onclick="openTimePicker('departure-time')" aria-label="Scegli ora partenza">
-              <span class="picker-icon">🕐</span>
-              <span class="picker-val" id="display-departure-time">Tocca per scegliere</span>
-            </button>
-            <input type="hidden" id="departure-time" name="departure-time" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">📅 Data Ritorno</label>
-            <button type="button" class="picker-btn" id="btn-return-date" onclick="openDatePicker('return-date')" aria-label="Scegli data ritorno">
-              <span class="picker-icon">📅</span>
-              <span class="picker-val" id="display-return-date">Tocca per scegliere</span>
-            </button>
-            <input type="hidden" id="return-date" name="return-date" />
+            <label for="hotel-address" class="form-label">Nome Hotel</label>
+            <input type="text" id="hotel-address" name="hotel-address" class="form-input" placeholder="es. Hotel Roma Centro" autocomplete="off" />
           </div>
           <div class="form-group">
-            <label class="form-label">🕐 Ora Ritorno</label>
-            <button type="button" class="picker-btn" id="btn-return-time" onclick="openTimePicker('return-time')" aria-label="Scegli ora ritorno">
-              <span class="picker-icon">🕐</span>
-              <span class="picker-val" id="display-return-time">Tocca per scegliere</span>
-            </button>
-            <input type="hidden" id="return-time" name="return-time" />
+            <label for="hotel-maps" class="form-label">🗺 Link Google Maps Hotel</label>
+            <input type="url" id="hotel-maps" name="hotel-maps" class="form-input" placeholder="https://maps.google.com/..." />
+            <p class="form-hint">Apri Maps → cerca hotel → copia il link dalla barra in alto</p>
           </div>
-        </div>
-        <div class="form-group">
-          <label for="hotel-address" class="form-label">Nome Hotel</label>
-          <input type="text" id="hotel-address" name="hotel-address" class="form-input" placeholder="es. Hotel Roma Centro" autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label for="hotel-maps" class="form-label">🗺 Link Google Maps Hotel</label>
-          <input type="url" id="hotel-maps" name="hotel-maps" class="form-input" placeholder="https://maps.google.com/..." />
-          <p class="form-hint">Apri Maps → cerca hotel → copia il link dalla barra in alto</p>
-        </div>
-        <button type="submit" class="btn btn--primary btn--full">Inizia il Viaggio →</button>
-      </form>
+          <button type="submit" class="btn btn--primary btn--full" id="setup-submit-btn">Avanti →</button>
+        </form>
+      </div>
+
     </div>
   </section>
 
   <!-- DASHBOARD -->
   <section id="section-dashboard" class="section section--dashboard hidden" aria-labelledby="dashboard-title">
-    <div class="trip-info-bar" role="region" aria-label="Informazioni viaggio">
-      <div class="trip-info-item">
-        <span class="info-label">Destinazione</span>
-        <span class="info-value" id="display-city">—</span>
-      </div>
-      <div class="trip-info-item">
-        <span class="info-label">Partenza</span>
-        <span class="info-value" id="display-departure">—</span>
-      </div>
-      <div class="trip-info-item">
-        <span class="info-label">Ritorno</span>
-        <span class="info-value" id="display-return">—</span>
+
+    <!-- Navigazione città (se più di 1) -->
+    <div id="city-nav-container" class="hidden">
+      <div class="city-nav-bar" id="city-nav-bar" role="tablist" aria-label="Città del viaggio"></div>
+      <div class="city-nav-arrows">
+        <button class="city-arrow-btn" id="btn-prev-city" onclick="goToCity(currentCityIdx - 1)" aria-label="Città precedente">← Prec.</button>
+        <button class="city-arrow-btn" id="btn-next-city" onclick="goToCity(currentCityIdx + 1)" aria-label="Città successiva">Succ. →</button>
       </div>
     </div>
 
-    <div class="transport-pocket" role="region" aria-label="Biglietti trasporto andata e ritorno">
-      <div class="transport-pocket-header">
-        <span id="transport-icon-display" aria-hidden="true">🚆</span>
-        <span id="display-transport-label">Biglietti Trasporto</span>
-        <span class="pocket-badge">sempre visibile</span>
-      </div>
-      <div class="transport-tickets-grid">
-        <div class="transport-ticket-slot">
-          <div class="ticket-slot-label">🟢 Andata</div>
-          <div class="pocket-upload-zone" role="button" tabindex="0"
-            aria-label="Carica biglietto di andata"
-            onclick="document.getElementById('input-andata').click()"
-            onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
-            <span aria-hidden="true">📎</span>
-            <span>Carica biglietto PDF</span>
-            <span class="upload-hint">Solo PDF</span>
-          </div>
-          <input type="file" id="input-andata" accept=".pdf" class="hidden" aria-label="Seleziona biglietto andata" onchange="handleTransportTicket(event,'andata')" />
-          <div id="ticket-andata-display" class="transport-ticket-display" aria-live="polite"></div>
-        </div>
-        <div class="transport-ticket-slot">
-          <div class="ticket-slot-label">🔴 Ritorno</div>
-          <div class="pocket-upload-zone" role="button" tabindex="0"
-            aria-label="Carica biglietto di ritorno"
-            onclick="document.getElementById('input-ritorno').click()"
-            onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
-            <span aria-hidden="true">📎</span>
-            <span>Carica biglietto PDF</span>
-            <span class="upload-hint">Solo PDF</span>
-          </div>
-          <input type="file" id="input-ritorno" accept=".pdf" class="hidden" aria-label="Seleziona biglietto ritorno" onchange="handleTransportTicket(event,'ritorno')" />
-          <div id="ticket-ritorno-display" class="transport-ticket-display" aria-live="polite"></div>
-        </div>
-      </div>
-    </div>
+    <!-- Contenuto città corrente (generato da JS) -->
+    <div id="city-dashboard-content"></div>
 
-    <div id="calendar-container" class="calendar-container" role="region" aria-label="Itinerario giornaliero">
-      <div class="calendar-heading-row">
-        <h2 id="dashboard-title" class="calendar-heading">Itinerario</h2>
-      </div>
-      <div id="days-list" class="days-list" aria-label="Lista giorni del viaggio"></div>
-      <button class="btn btn--add-day" onclick="addDay()">+ Aggiungi giorno</button>
-    </div>
   </section>
 
   <!-- SETTINGS -->
   <section id="section-settings" class="section section--settings hidden" aria-labelledby="settings-title">
     <div class="settings-card">
       <h2 id="settings-title">Configurazione Viaggio</h2>
-      <p>Puoi resettare tutti i dati e ricominciare da capo.</p>
+      <p>Puoi inviare l'itinerario completo o resettare tutto.</p>
       <button class="btn btn--primary btn--full" onclick="exportToMail()" style="background:#0ea5e9;">📧 Invia itinerario per email</button>
       <button class="btn btn--danger btn--full" onclick="resetTrip()" style="margin-top:0.75rem">🔄 Resetta e Riconfigura</button>
-      <button class="btn btn--ghost btn--full" onclick="showSection('dashboard')" style="margin-top:0.75rem">← Torna all'itinerario</button>
+      <button class="btn btn--ghost btn--full" onclick="showSection('dashboard');renderDashboard()" style="margin-top:0.75rem">← Torna all'itinerario</button>
     </div>
   </section>
 
@@ -847,12 +904,29 @@
 'use strict';
 
 let tripData = {
-  city: '', departureDate: '', departureTime: '',
-  returnDate: '', returnTime: '', transport: '',
-  hotelAddress: '', hotelMaps: '',
-  days: [], globalTickets: [],
-  transportTickets: { andata: null, ritorno: null }
+  cities: []   // Array di oggetti città
 };
+
+// Struttura di una città:
+// { city, departureDate, departureTime, returnDate, returnTime,
+//   transport, hotelAddress, hotelMaps,
+//   days: [], globalTickets: [],
+//   transportTickets: { andata: null, ritorno: null } }
+
+function newCityData(city) {
+  return {
+    city: city || '',
+    departureDate: '', departureTime: '',
+    returnDate: '',    returnTime: '',
+    transport: '', hotelAddress: '', hotelMaps: '',
+    days: [], globalTickets: [],
+    transportTickets: { andata: null, ritorno: null }
+  };
+}
+
+let currentCityIdx = 0;
+let setupCityCount = 1;
+let setupCurrentStep = 0; // quale città si sta configurando
 
 let currentPosition = null;
 let dropdownTarget = null;
@@ -867,21 +941,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('setup-form').addEventListener('submit', handleSetup);
 
-  // Precompila i display se ci sono dati salvati
-  if (tripData.departureDate) {
-    setDateDisplay('departure-date', tripData.departureDate);
-  }
-  if (tripData.returnDate) {
-    setDateDisplay('return-date', tripData.returnDate);
-  }
-  if (tripData.departureTime) {
-    setTimeDisplay('departure-time', tripData.departureTime);
-  }
-  if (tripData.returnTime) {
-    setTimeDisplay('return-time', tripData.returnTime);
-  }
-
-  if (tripData.city) {
+  if (tripData.cities && tripData.cities.length > 0) {
+    currentCityIdx = 0;
     renderDashboard();
     showSection('dashboard');
   } else {
@@ -890,7 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('click', (e) => {
     const dd = document.getElementById('places-dropdown');
-    if (!dd.contains(e.target) && e.target.id !== 'place-input-' + dropdownDayIdx + '-' + dropdownSlotIdx) {
+    if (dd && !dd.contains(e.target) && e.target.id !== 'place-input-' + dropdownDayIdx + '-' + dropdownSlotIdx) {
       closeDropdown();
     }
   });
@@ -908,7 +969,15 @@ function saveData() {
 function loadData() {
   try {
     const s = localStorage.getItem('travelAssist_v2');
-    if (s) tripData = { ...tripData, ...JSON.parse(s) };
+    if (s) {
+      const parsed = JSON.parse(s);
+      // Migrazione da vecchio formato single-city
+      if (parsed.city && !parsed.cities) {
+        tripData.cities = [parsed];
+      } else {
+        tripData = { cities: [], ...parsed };
+      }
+    }
   } catch(e) {}
 }
 
@@ -919,7 +988,82 @@ function showSection(name) {
   announce('Sezione ' + name);
 }
 
-// ---- SETUP ----
+// ---- SETUP MULTI-CITY ----
+
+function selectCityCount(n) {
+  setupCityCount = n;
+  setupCurrentStep = 0;
+  tripData.cities = [];
+  // Aggiorna bottoni visuali
+  document.querySelectorAll('.city-count-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i + 1 === n);
+  });
+  // Mostra form wizard
+  document.getElementById('setup-step-choose-count').classList.add('hidden');
+  document.getElementById('setup-step-city').classList.remove('hidden');
+  renderSetupStep();
+  announce('Configurazione città ' + 1 + ' di ' + n);
+}
+
+function renderSetupStep() {
+  const n = setupCityCount;
+  const i = setupCurrentStep;
+
+  // Titolo
+  document.getElementById('setup-city-form-title').textContent =
+    n === 1 ? '🏙 Configura la tua destinazione' : `🏙 Città ${i + 1} di ${n}`;
+
+  // Step dots
+  const dots = document.getElementById('setup-step-dots');
+  dots.innerHTML = '';
+  if (n > 1) {
+    for (let k = 0; k < n; k++) {
+      if (k > 0) {
+        const line = document.createElement('div');
+        line.className = 'step-line' + (k <= i ? ' done' : '');
+        dots.appendChild(line);
+      }
+      const dot = document.createElement('div');
+      dot.className = 'step-dot' + (k < i ? ' done' : k === i ? ' active' : '');
+      dot.textContent = k < i ? '✓' : (k + 1);
+      dots.appendChild(dot);
+    }
+  }
+
+  // Pulsante submit
+  const btn = document.getElementById('setup-submit-btn');
+  const isLast = i === n - 1;
+  btn.textContent = isLast ? '✓ Inizia il Viaggio!' : `Avanti → Città ${i + 2}`;
+
+  // Prefill se già configurata (per modifiche)
+  const existing = tripData.cities[i];
+  const f = document.getElementById('setup-form');
+  f.city.value = existing?.city || '';
+  f['hotel-address'].value = existing?.hotelAddress || '';
+  f['hotel-maps'].value = existing?.hotelMaps || '';
+
+  // Reset picker display
+  const resetPicker = (hiddenId, displayId, btnId, val, isFn) => {
+    document.getElementById(hiddenId).value = val || '';
+    const disp = document.getElementById(displayId);
+    const pickBtn = document.getElementById(btnId);
+    if (val) {
+      if (isFn) isFn(hiddenId, val);
+    } else {
+      if (disp) disp.textContent = 'Tocca per scegliere';
+      if (pickBtn) pickBtn.classList.remove('has-value');
+    }
+  };
+  if (existing?.departureDate) setDateDisplay('departure-date', existing.departureDate);
+  else resetPicker('departure-date', 'display-departure-date', 'btn-departure-date', null);
+  if (existing?.returnDate) setDateDisplay('return-date', existing.returnDate);
+  else resetPicker('return-date', 'display-return-date', 'btn-return-date', null);
+  if (existing?.departureTime) setTimeDisplay('departure-time', existing.departureTime);
+  else resetPicker('departure-time', 'display-departure-time', 'btn-departure-time', null);
+  if (existing?.returnTime) setTimeDisplay('return-time', existing.returnTime);
+  else resetPicker('return-time', 'display-return-time', 'btn-return-time', null);
+}
+
 function handleSetup(e) {
   e.preventDefault();
   const f = e.target;
@@ -931,26 +1075,44 @@ function handleSetup(e) {
   const depTime = document.getElementById('departure-time').value;
   const retTime = document.getElementById('return-time').value;
 
-  if (!depDate) { showToast('Inserisci la data di partenza', 'error'); return; }
-  if (!retDate) { showToast('Inserisci la data di ritorno', 'error'); return; }
+  if (!depDate) { showToast('Inserisci la data di arrivo', 'error'); return; }
+  if (!retDate) { showToast('Inserisci la data di partenza', 'error'); return; }
 
-  tripData.city          = city;
-  tripData.departureDate = depDate;
-  tripData.departureTime = depTime;
-  tripData.returnDate    = retDate;
-  tripData.returnTime    = retTime;
-  tripData.hotelAddress  = f['hotel-address'].value.trim();
-  tripData.hotelMaps     = f['hotel-maps'].value.trim();
-  tripData.days          = generateDays(depDate, retDate);
+  const cityObj = newCityData(city);
+  cityObj.departureDate = depDate;
+  cityObj.departureTime = depTime;
+  cityObj.returnDate    = retDate;
+  cityObj.returnTime    = retTime;
+  cityObj.hotelAddress  = f['hotel-address'].value.trim();
+  cityObj.hotelMaps     = f['hotel-maps'].value.trim();
+  cityObj.days          = generateDays(depDate, retDate, setupCurrentStep);
 
+  // Preserva biglietti/giorni già inseriti se stiamo rieditando
+  if (tripData.cities[setupCurrentStep]) {
+    cityObj.days = tripData.cities[setupCurrentStep].days.length > 0
+      ? tripData.cities[setupCurrentStep].days
+      : cityObj.days;
+    cityObj.globalTickets     = tripData.cities[setupCurrentStep].globalTickets;
+    cityObj.transportTickets  = tripData.cities[setupCurrentStep].transportTickets;
+  }
+
+  tripData.cities[setupCurrentStep] = cityObj;
   saveData();
-  renderDashboard();
-  showSection('dashboard');
-  announce('Viaggio configurato');
+
+  if (setupCurrentStep < setupCityCount - 1) {
+    setupCurrentStep++;
+    renderSetupStep();
+    announce('Configura città ' + (setupCurrentStep + 1));
+  } else {
+    currentCityIdx = 0;
+    renderDashboard();
+    showSection('dashboard');
+    announce('Viaggio configurato con ' + setupCityCount + ' città');
+  }
 }
 
 // ---- GIORNI ----
-function generateDays(start, end) {
+function generateDays(start, end, cityIdx) {
   if (!start || !end) return [];
   const days = [];
   const parseParts = s => s.split('-').map(Number);
@@ -959,11 +1121,12 @@ function generateDays(start, end) {
   let cur = new Date(sy, sm - 1, sd);
   const last = new Date(ey, em - 1, ed);
   let n = 1;
+  const prefix = 'c' + (cityIdx !== undefined ? cityIdx : currentCityIdx);
   while (cur <= last) {
     const dateStr = cur.getFullYear() + '-' +
       String(cur.getMonth() + 1).padStart(2, '0') + '-' +
       String(cur.getDate()).padStart(2, '0');
-    days.push({ id: 'day' + n, date: dateStr, slots: [], tickets: [] });
+    days.push({ id: prefix + 'day' + n, date: dateStr, slots: [], tickets: [] });
     cur.setDate(cur.getDate() + 1);
     n++;
   }
@@ -971,7 +1134,9 @@ function generateDays(start, end) {
 }
 
 function addDay() {
-  const last = tripData.days[tripData.days.length - 1];
+  const c = tripData.cities[currentCityIdx];
+  if (!c) return;
+  const last = c.days[c.days.length - 1];
   let nextDateStr;
   if (last) {
     const parts = last.date.split('-');
@@ -981,14 +1146,179 @@ function addDay() {
     const today = new Date();
     nextDateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
   }
-  const d = { id: 'day' + (tripData.days.length + 1), date: nextDateStr, slots: [], tickets: [] };
-  tripData.days.push(d);
+  const prefix = 'c' + currentCityIdx;
+  const d = { id: prefix + 'day' + (c.days.length + 1), date: nextDateStr, slots: [], tickets: [] };
+  c.days.push(d);
   saveData();
-  const container = document.getElementById('days-list');
-  const el = createDayCard(d, tripData.days.length - 1);
-  container.appendChild(el);
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const container = document.getElementById('days-list-' + currentCityIdx);
+  if (container) {
+    const el = createDayCard(d, c.days.length - 1);
+    container.appendChild(el);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   announce('Giorno aggiunto');
+}
+
+// ---- DASHBOARD MULTI-CITY ----
+
+function goToCity(idx) {
+  const n = tripData.cities.length;
+  if (idx < 0 || idx >= n) return;
+  currentCityIdx = idx;
+  renderDashboard();
+  announce('Città ' + (idx + 1) + ': ' + (tripData.cities[idx].city || ''));
+}
+
+function renderDashboard() {
+  const cities = tripData.cities;
+  const n = cities.length;
+  const ci = currentCityIdx;
+  const c = cities[ci];
+  if (!c) return;
+
+  // Navigazione tab città
+  const navContainer = document.getElementById('city-nav-container');
+  const navBar = document.getElementById('city-nav-bar');
+  if (n > 1) {
+    navContainer.classList.remove('hidden');
+    navBar.innerHTML = '';
+    cities.forEach((city, i) => {
+      const tab = document.createElement('button');
+      tab.className = 'city-nav-tab' + (i === ci ? ' active' : '');
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', i === ci ? 'true' : 'false');
+      tab.innerHTML = `<span class="tab-num">Città ${i+1}</span><span class="tab-name">${esc(city.city || '—')}</span>`;
+      tab.addEventListener('click', () => goToCity(i));
+      navBar.appendChild(tab);
+    });
+    // Aggiorna frecce
+    document.getElementById('btn-prev-city').disabled = ci === 0;
+    document.getElementById('btn-next-city').disabled = ci === n - 1;
+  } else {
+    navContainer.classList.add('hidden');
+  }
+
+  // Genera contenuto della città corrente
+  const content = document.getElementById('city-dashboard-content');
+  content.innerHTML = '';
+
+  // Info bar
+  const infoBar = document.createElement('div');
+  infoBar.className = 'trip-info-bar';
+  infoBar.setAttribute('role', 'region');
+  infoBar.setAttribute('aria-label', 'Informazioni ' + c.city);
+  infoBar.innerHTML = `
+    <div class="trip-info-item">
+      <span class="info-label">Destinazione</span>
+      <span class="info-value">${esc(c.city || '—')}</span>
+    </div>
+    <div class="trip-info-item">
+      <span class="info-label">Arrivo</span>
+      <span class="info-value">${c.departureDate ? formatDate(c.departureDate) + (c.departureTime ? ' ' + c.departureTime : '') : '—'}</span>
+    </div>
+    <div class="trip-info-item">
+      <span class="info-label">Partenza</span>
+      <span class="info-value">${c.returnDate ? formatDate(c.returnDate) + (c.returnTime ? ' ' + c.returnTime : '') : '—'}</span>
+    </div>
+  `;
+  content.appendChild(infoBar);
+
+  // Tasca biglietti trasporto
+  content.appendChild(buildTransportPocket(c, ci));
+
+  // Itinerario giorni
+  const calSection = document.createElement('div');
+  calSection.className = 'calendar-container';
+  calSection.setAttribute('role', 'region');
+  calSection.setAttribute('aria-label', 'Itinerario ' + c.city);
+  calSection.innerHTML = `
+    <div class="calendar-heading-row">
+      <h2 class="calendar-heading">📍 Itinerario ${esc(c.city)}</h2>
+    </div>
+  `;
+  const daysList = document.createElement('div');
+  daysList.className = 'days-list';
+  daysList.id = 'days-list-' + ci;
+  daysList.setAttribute('aria-label', 'Lista giorni ' + c.city);
+  if (!c.days.length) {
+    daysList.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;font-size:var(--text-base)">Nessun giorno configurato</p>';
+  } else {
+    c.days.forEach((day, idx) => {
+      const el = createDayCard(day, idx);
+      daysList.appendChild(el);
+      if (isToday(day.date)) { el.classList.add('expanded', 'is-today'); el.querySelector('.day-header').setAttribute('aria-expanded', 'true'); }
+    });
+  }
+  calSection.appendChild(daysList);
+  const addDayBtn = document.createElement('button');
+  addDayBtn.className = 'btn btn--add-day';
+  addDayBtn.textContent = '+ Aggiungi giorno';
+  addDayBtn.addEventListener('click', addDay);
+  calSection.appendChild(addDayBtn);
+  content.appendChild(calSection);
+
+  // Biglietti globali città (renderizzati nell'area modale ma dati per città)
+}
+
+function buildTransportPocket(c, ci) {
+  const pocket = document.createElement('div');
+  pocket.className = 'transport-pocket';
+  pocket.setAttribute('role', 'region');
+  pocket.setAttribute('aria-label', 'Biglietti trasporto ' + (c.city || ''));
+
+  pocket.innerHTML = `
+    <div class="transport-pocket-header">
+      <span aria-hidden="true">🚆</span>
+      <span>Biglietti Trasporto — ${esc(c.city || '')}</span>
+      <span class="pocket-badge">sempre visibile</span>
+    </div>
+    <div class="transport-tickets-grid">
+      <div class="transport-ticket-slot">
+        <div class="ticket-slot-label">🟢 Andata</div>
+        <div class="pocket-upload-zone" role="button" tabindex="0"
+          aria-label="Carica biglietto di andata"
+          id="zone-andata-${ci}"
+          onclick="document.getElementById('input-andata-${ci}').click()"
+          onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+          <span aria-hidden="true">📎</span>
+          <span>Carica biglietto PDF</span>
+          <span class="upload-hint">Solo PDF</span>
+        </div>
+        <input type="file" id="input-andata-${ci}" accept=".pdf" class="hidden"
+          aria-label="Seleziona biglietto andata"
+          onchange="handleTransportTicket(event,'andata',${ci})" />
+        <div id="ticket-andata-display-${ci}" class="transport-ticket-display" aria-live="polite"></div>
+      </div>
+      <div class="transport-ticket-slot">
+        <div class="ticket-slot-label">🔴 Ritorno</div>
+        <div class="pocket-upload-zone" role="button" tabindex="0"
+          aria-label="Carica biglietto di ritorno"
+          id="zone-ritorno-${ci}"
+          onclick="document.getElementById('input-ritorno-${ci}').click()"
+          onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+          <span aria-hidden="true">📎</span>
+          <span>Carica biglietto PDF</span>
+          <span class="upload-hint">Solo PDF</span>
+        </div>
+        <input type="file" id="input-ritorno-${ci}" accept=".pdf" class="hidden"
+          aria-label="Seleziona biglietto ritorno"
+          onchange="handleTransportTicket(event,'ritorno',${ci})" />
+        <div id="ticket-ritorno-display-${ci}" class="transport-ticket-display" aria-live="polite"></div>
+      </div>
+    </div>
+  `;
+
+  // Renderizza biglietti già presenti
+  setTimeout(() => {
+    renderTransportTicketsForCity(ci);
+  }, 0);
+
+  return pocket;
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
 }
 
 function formatDate(s) {
@@ -1000,39 +1330,19 @@ function formatDate(s) {
 }
 function isToday(s) { return s === new Date().toISOString().split('T')[0]; }
 
-// ---- DASHBOARD ----
-function renderDashboard() {
-  setText('display-city', tripData.city || '—');
-  setText('display-departure', tripData.departureDate ? formatDate(tripData.departureDate) + ' ' + tripData.departureTime : '—');
-  setText('display-return', tripData.returnDate ? formatDate(tripData.returnDate) + ' ' + tripData.returnTime : '—');
-
-  const icons = { autobus:'🚌', auto:'🚗', treno:'🚂', aereo:'✈️' };
-  const labels = { autobus:'Biglietti Autobus', auto:'Biglietti Auto', treno:'Biglietti Treno', aereo:'Biglietti Aereo' };
-  setText('transport-icon-display', icons[tripData.transport] || '🚆');
-  setText('display-transport-label', labels[tripData.transport] || 'Biglietti Trasporto');
-
-  renderTransportTickets();
-  renderDaysList();
-  renderGlobalTickets();
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
 // ---- BIGLIETTI TRASPORTO ----
-function renderTransportTickets() {
+function renderTransportTicketsForCity(ci) {
+  const c = tripData.cities[ci];
+  if (!c) return;
   ['andata', 'ritorno'].forEach(dir => {
-    const ticket = tripData.transportTickets?.[dir];
-    const display = document.getElementById('ticket-' + dir + '-display');
+    const ticket = c.transportTickets?.[dir];
+    const display = document.getElementById('ticket-' + dir + '-display-' + ci);
     if (!display) return;
-    const slot = display.closest('.transport-ticket-slot');
-    const zone = slot ? slot.querySelector('.pocket-upload-zone') : null;
-    const input = document.getElementById('input-' + dir);
+    const zone = document.getElementById('zone-' + dir + '-' + ci);
+    const input = document.getElementById('input-' + dir + '-' + ci);
     display.innerHTML = '';
     if (ticket) {
-      display.appendChild(buildTransportTicketEl(ticket, dir));
+      display.appendChild(buildTransportTicketEl(ticket, dir, ci));
       if (zone) zone.classList.add('hidden');
     } else {
       if (zone) zone.classList.remove('hidden');
@@ -1041,7 +1351,11 @@ function renderTransportTickets() {
   });
 }
 
-function buildTransportTicketEl(ticket, dir) {
+// Compatibilità con vecchie chiamate (usata dai modal biglietti)
+function renderTransportTickets() { renderTransportTicketsForCity(currentCityIdx); }
+
+function buildTransportTicketEl(ticket, dir, ci) {
+  const cityIdx = ci !== undefined ? ci : currentCityIdx;
   const el = document.createElement('div');
   el.className = 'transport-ticket-item';
   el.innerHTML = `
@@ -1051,55 +1365,43 @@ function buildTransportTicketEl(ticket, dir) {
     <button class="transport-ticket-del" aria-label="Elimina biglietto ${dir}">🗑</button>
   `;
   el.querySelector('.transport-ticket-view').addEventListener('click', () => openViewerFromTicket(ticket));
-  el.querySelector('.transport-ticket-del').addEventListener('click', () => deleteTransportTicket(dir));
+  el.querySelector('.transport-ticket-del').addEventListener('click', () => deleteTransportTicket(dir, cityIdx));
   return el;
 }
 
-function handleTransportTicket(event, dir) {
+function handleTransportTicket(event, dir, ci) {
+  const cityIdx = ci !== undefined ? ci : currentCityIdx;
   const file = event.target.files[0];
   if (!file) return;
   readFile(file, ticket => {
-    if (!tripData.transportTickets) tripData.transportTickets = {};
-    tripData.transportTickets[dir] = ticket;
+    const c = tripData.cities[cityIdx];
+    if (!c.transportTickets) c.transportTickets = {};
+    c.transportTickets[dir] = ticket;
     saveData();
-    const display = document.getElementById('ticket-' + dir + '-display');
-    if (display) { display.innerHTML = ''; display.appendChild(buildTransportTicketEl(ticket, dir)); }
-    const slot = display ? display.closest('.transport-ticket-slot') : null;
-    if (slot) { const zone = slot.querySelector('.pocket-upload-zone'); if (zone) zone.classList.add('hidden'); }
+    const display = document.getElementById('ticket-' + dir + '-display-' + cityIdx);
+    if (display) { display.innerHTML = ''; display.appendChild(buildTransportTicketEl(ticket, dir, cityIdx)); }
+    const zone = document.getElementById('zone-' + dir + '-' + cityIdx);
+    if (zone) zone.classList.add('hidden');
     event.target.value = '';
     showToast('Biglietto ' + dir + ' caricato ✓', 'success');
     announce('Biglietto ' + dir + ' caricato');
   });
 }
 
-function deleteTransportTicket(dir) {
-  tripData.transportTickets[dir] = null;
+function deleteTransportTicket(dir, ci) {
+  const cityIdx = ci !== undefined ? ci : currentCityIdx;
+  tripData.cities[cityIdx].transportTickets[dir] = null;
   saveData();
-  const display = document.getElementById('ticket-' + dir + '-display');
+  const display = document.getElementById('ticket-' + dir + '-display-' + cityIdx);
   if (display) display.innerHTML = '';
-  if (display) {
-    const slot = display.closest('.transport-ticket-slot');
-    if (slot) { const zone = slot.querySelector('.pocket-upload-zone'); if (zone) zone.classList.remove('hidden'); }
-  }
-  const input = document.getElementById('input-' + dir);
+  const zone = document.getElementById('zone-' + dir + '-' + cityIdx);
+  if (zone) zone.classList.remove('hidden');
+  const input = document.getElementById('input-' + dir + '-' + cityIdx);
   if (input) input.value = '';
   showToast('Biglietto eliminato', 'info');
 }
 
-// ---- LISTA GIORNI ----
-function renderDaysList() {
-  const container = document.getElementById('days-list');
-  container.innerHTML = '';
-  if (!tripData.days.length) {
-    container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;font-size:var(--text-base)">Nessun giorno configurato</p>';
-    return;
-  }
-  tripData.days.forEach((day, idx) => {
-    const el = createDayCard(day, idx);
-    container.appendChild(el);
-    if (isToday(day.date)) { el.classList.add('expanded', 'is-today'); el.querySelector('.day-header').setAttribute('aria-expanded', 'true'); }
-  });
-}
+// renderDaysList is now handled inside renderDashboard
 
 function createDayCard(day, idx) {
   const card = document.createElement('article');
@@ -1216,7 +1518,7 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
     const h = String(hhInput.value).padStart(2,'0');
     const m = String(mmInput.value).padStart(2,'0');
     const val = (hhInput.value !== '' && mmInput.value !== '') ? `${h}:${m}` : '';
-    tripData.days[dayIdx].slots[slotIdx].time = val;
+    tripData.cities[currentCityIdx].days[dayIdx].slots[slotIdx].time = val;
     saveData();
   }
 
@@ -1237,7 +1539,7 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
   }
 
   placeInput.addEventListener('input', () => {
-    tripData.days[dayIdx].slots[slotIdx].place = placeInput.value;
+    tripData.cities[currentCityIdx].days[dayIdx].slots[slotIdx].place = placeInput.value;
     saveData();
     handlePlaceInput(placeInput, dayIdx, slotIdx);
   });
@@ -1252,14 +1554,14 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
 
   mapsInput.addEventListener('input', () => {
     const val = mapsInput.value.trim();
-    tripData.days[dayIdx].slots[slotIdx].mapsLink = val;
+    tripData.cities[currentCityIdx].days[dayIdx].slots[slotIdx].mapsLink = val;
     saveData();
     updateGoBtn(dayIdx, slotIdx, val, placeInput.value);
   });
 
   mapsInput.addEventListener('change', () => {
     const val = mapsInput.value.trim();
-    tripData.days[dayIdx].slots[slotIdx].mapsLink = val;
+    tripData.cities[currentCityIdx].days[dayIdx].slots[slotIdx].mapsLink = val;
     saveData();
     updateGoBtn(dayIdx, slotIdx, val, placeInput.value);
   });
@@ -1286,7 +1588,7 @@ function showDropdownLoading(inputEl) {
 }
 
 function fetchPlaces(query, dayIdx, slotIdx, inputEl) {
-  const city = tripData.city || '';
+  const city = (tripData.cities[currentCityIdx] || {}).city || '';
   const search = city ? `${query}, ${city}` : query;
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(search)}&limit=5&accept-language=it`;
   fetch(url, { headers: { 'Accept-Language': 'it' } })
@@ -1367,10 +1669,11 @@ function renderDropdownOffline(query, dayIdx, slotIdx, inputEl) {
 }
 
 function selectPlace(name, mapsLink, lat, lng, dayIdx, slotIdx, inputEl) {
-  tripData.days[dayIdx].slots[slotIdx].place = name;
-  tripData.days[dayIdx].slots[slotIdx].mapsLink = mapsLink;
-  tripData.days[dayIdx].slots[slotIdx].lat = lat;
-  tripData.days[dayIdx].slots[slotIdx].lng = lng;
+  const _cd = tripData.cities[currentCityIdx];
+  _cd.days[dayIdx].slots[slotIdx].place = name;
+  _cd.days[dayIdx].slots[slotIdx].mapsLink = mapsLink;
+  _cd.days[dayIdx].slots[slotIdx].lat = lat;
+  _cd.days[dayIdx].slots[slotIdx].lng = lng;
   saveData();
   inputEl.value = name;
   const mapsInput = document.getElementById('maps-input-' + dayIdx + '-' + slotIdx);
@@ -1404,7 +1707,7 @@ async function pasteMapLink(dayIdx, slotIdx) {
     const placeInput = document.getElementById('place-input-' + dayIdx + '-' + slotIdx);
     if (mapsInput) {
       mapsInput.value = text.trim();
-      tripData.days[dayIdx].slots[slotIdx].mapsLink = text.trim();
+      tripData.cities[currentCityIdx].days[dayIdx].slots[slotIdx].mapsLink = text.trim();
       saveData();
       updateGoBtn(dayIdx, slotIdx, text.trim(), placeInput?.value || '');
       showToast('Link Maps salvato ✓', 'success');
@@ -1450,10 +1753,11 @@ function updateGoBtn(dayIdx, slotIdx, mapsLink, placeName) {
 
 // ---- GESTIONE SLOT ----
 function addSlot(dayIdx) {
-  if (!tripData.days[dayIdx].slots) tripData.days[dayIdx].slots = [];
-  tripData.days[dayIdx].slots.push({ time: '', place: '', mapsLink: '' });
+  const _c = tripData.cities[currentCityIdx];
+  if (!_c.days[dayIdx].slots) _c.days[dayIdx].slots = [];
+  _c.days[dayIdx].slots.push({ time: '', place: '', mapsLink: '' });
   saveData();
-  const day = tripData.days[dayIdx];
+  const day = _c.days[dayIdx];
   const si = day.slots.length - 1;
   const list = document.getElementById('slots-' + day.id);
   if (list) {
@@ -1465,9 +1769,10 @@ function addSlot(dayIdx) {
 }
 
 function removeSlot(dayIdx, slotIdx) {
-  tripData.days[dayIdx].slots.splice(slotIdx, 1);
+  const _c = tripData.cities[currentCityIdx];
+  _c.days[dayIdx].slots.splice(slotIdx, 1);
   saveData();
-  const day = tripData.days[dayIdx];
+  const day = _c.days[dayIdx];
   const list = document.getElementById('slots-' + day.id);
   if (list) {
     list.innerHTML = '';
@@ -1477,18 +1782,19 @@ function removeSlot(dayIdx, slotIdx) {
 }
 
 function saveSlotDone(dayIdx, slotIdx) {
-  const day = tripData.days[dayIdx];
+  const day = tripData.cities[currentCityIdx].days[dayIdx];
   const segT = document.getElementById('seg-time-' + day.id + '-' + slotIdx);
   if (segT) {
     const [hh, mm] = segT.querySelectorAll('.seg-input');
     if (hh.value !== '' && mm.value !== '') {
-      tripData.days[dayIdx].slots[slotIdx].time = `${String(hh.value).padStart(2,'0')}:${String(mm.value).padStart(2,'0')}`;
+      _cd2.days[dayIdx].slots[slotIdx].time = `${String(hh.value).padStart(2,'0')}:${String(mm.value).padStart(2,'0')}`;
     }
   }
   const placeInput = document.getElementById('place-input-' + dayIdx + '-' + slotIdx);
   const mapsInput  = document.getElementById('maps-input-' + dayIdx + '-' + slotIdx);
-  if (placeInput) tripData.days[dayIdx].slots[slotIdx].place    = placeInput.value;
-  if (mapsInput)  tripData.days[dayIdx].slots[slotIdx].mapsLink = mapsInput.value;
+  const _cd2 = tripData.cities[currentCityIdx];
+  if (placeInput) _cd2.days[dayIdx].slots[slotIdx].place    = placeInput.value;
+  if (mapsInput)  _cd2.days[dayIdx].slots[slotIdx].mapsLink = mapsInput.value;
   saveData();
   const item = document.getElementById('slot-' + day.id + '-' + slotIdx);
   if (item) {
@@ -1501,7 +1807,7 @@ function saveSlotDone(dayIdx, slotIdx) {
 }
 
 function editSlot(dayIdx, slotIdx) {
-  const day = tripData.days[dayIdx];
+  const day = tripData.cities[currentCityIdx].days[dayIdx];
   const item = document.getElementById('slot-' + day.id + '-' + slotIdx);
   if (item) {
     item.classList.remove('slot-saved');
@@ -1550,9 +1856,11 @@ function readFile(file, cb) {
 }
 
 function handleGlobalFileUpload(event) {
+  const c = tripData.cities[currentCityIdx];
+  if (!c) return;
   Array.from(event.target.files).forEach(file => readFile(file, ticket => {
-    if (!tripData.globalTickets) tripData.globalTickets = [];
-    tripData.globalTickets.push(ticket);
+    if (!c.globalTickets) c.globalTickets = [];
+    c.globalTickets.push(ticket);
     saveData();
     renderGlobalTickets();
     showToast(file.name + ' caricato ✓', 'success');
@@ -1561,13 +1869,14 @@ function handleGlobalFileUpload(event) {
 }
 
 function handleDayFile(event, dayIdx) {
+  const _c = tripData.cities[currentCityIdx];
   Array.from(event.target.files).forEach(file => readFile(file, ticket => {
-    if (!tripData.days[dayIdx].tickets) tripData.days[dayIdx].tickets = [];
-    tripData.days[dayIdx].tickets.push(ticket);
+    if (!_c.days[dayIdx].tickets) _c.days[dayIdx].tickets = [];
+    _c.days[dayIdx].tickets.push(ticket);
     saveData();
-    const day = tripData.days[dayIdx];
+    const day = _c.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
-    const ti = tripData.days[dayIdx].tickets.length - 1;
+    const ti = _c.days[dayIdx].tickets.length - 1;
     if (list) list.appendChild(createTicketItem(ticket, ti, 'day', dayIdx));
     const zone = document.getElementById('day-zone-' + day.id);
     const inp  = document.getElementById('day-input-' + day.id);
@@ -1593,15 +1902,17 @@ function ensureDayAddMoreBtn(day, dayIdx, inp, list) {
 }
 
 function renderGlobalTickets() {
+  const c = tripData.cities[currentCityIdx];
+  if (!c) return;
   const list = document.getElementById('global-tickets-list');
   if (!list) return;
   list.innerHTML = '';
-  (tripData.globalTickets || []).forEach((t, i) => list.appendChild(createTicketItem(t, i, 'global')));
+  (c.globalTickets || []).forEach((t, i) => list.appendChild(createTicketItem(t, i, 'global')));
   const zone = document.getElementById('global-upload-zone');
   const inp  = document.getElementById('global-file-input');
   const oldBtn = document.getElementById('global-add-more-btn');
   if (oldBtn) oldBtn.remove();
-  if ((tripData.globalTickets || []).length > 0) {
+  if ((c.globalTickets || []).length > 0) {
     if (zone) zone.classList.add('hidden');
     if (inp) {
       const addBtn = document.createElement('button');
@@ -1634,12 +1945,13 @@ function createTicketItem(ticket, idx, scope, dayIdx) {
 
 function deleteTicket(scope, idx, dayIdx) {
   if (scope === 'global') {
-    tripData.globalTickets.splice(idx, 1);
+    tripData.cities[currentCityIdx].globalTickets.splice(idx, 1);
     saveData(); renderGlobalTickets();
   } else if (scope === 'day') {
-    tripData.days[dayIdx].tickets.splice(idx, 1);
+    const _cd = tripData.cities[currentCityIdx];
+    _cd.days[dayIdx].tickets.splice(idx, 1);
     saveData();
-    const day = tripData.days[dayIdx];
+    const day = _cd.days[dayIdx];
     const list = document.getElementById('day-tickets-' + day.id);
     if (list) { list.innerHTML = ''; day.tickets.forEach((t,ti) => list.appendChild(createTicketItem(t,ti,'day',dayIdx))); }
     const zone   = document.getElementById('day-zone-' + day.id);
@@ -1747,21 +2059,15 @@ function closeViewer() {
 
 // ---- MODALS ----
 function openTicketModal() {
+  const c = tripData.cities[currentCityIdx];
+  const title = document.getElementById('modal-ticket-title');
+  if (title && c) title.textContent = '🎫 Biglietti Extra — ' + (c.city || 'Città');
+  renderGlobalTickets();
   document.getElementById('modal-ticket').classList.remove('hidden');
   announce('Finestra biglietti aperta');
 }
 function closeModal(id) {
   document.getElementById(id).classList.add('hidden');
-}
-
-function openHotel() {
-  const link = tripData.hotelMaps;
-  if (link) { window.open(link, '_blank', 'noopener,noreferrer'); return; }
-  if (tripData.hotelAddress) {
-    window.open('https://maps.google.com/?q=' + encodeURIComponent(tripData.hotelAddress), '_blank', 'noopener,noreferrer');
-    return;
-  }
-  showToast('Configura prima l\'indirizzo dell\'hotel', 'error');
 }
 
 function openAttractions() {
@@ -1792,7 +2098,6 @@ function openAttractions() {
 
 // ---- EXPORT EMAIL ----
 function exportToMail() {
-  const d = tripData;
   const giorni = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   const mesi = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
 
@@ -1802,63 +2107,65 @@ function exportToMail() {
     return `${giorni[dt.getDay()]} ${dt.getDate()} ${mesi[dt.getMonth()]}`;
   }
 
-  let body = '';
+  const cities = tripData.cities || [];
+  let body = `VIAGGIO — ${cities.length} CITTÀ\n`;
+  body += '='.repeat(40) + '\n\n';
 
-  // Intestazione viaggio
-  body += `VIAGGIO A ${(d.city || '—').toUpperCase()}\n`;
-  body += `Partenza: ${fmtDate(d.departureDate)} ore ${d.departureTime || '—'}\n`;
-  body += `Ritorno:  ${fmtDate(d.returnDate)} ore ${d.returnTime || '—'}\n`;
-  if (d.hotelAddress) body += `Hotel: ${d.hotelAddress}\n`;
-  if (d.hotelMaps)    body += `Maps hotel: ${d.hotelMaps}\n`;
-  body += '\n';
-
-  // Biglietti trasporto
-  const at = d.transportTickets?.andata;
-  const rt = d.transportTickets?.ritorno;
-  if (at || rt) {
-    body += '--- BIGLIETTI TRASPORTO ---\n';
-    if (at) body += `Andata: ${at.name}\n`;
-    if (rt) body += `Ritorno: ${rt.name}\n`;
+  cities.forEach((d, ci) => {
+    body += `CITTÀ ${ci + 1}: ${(d.city || '—').toUpperCase()}\n`;
+    body += `Arrivo:   ${fmtDate(d.departureDate)} ore ${d.departureTime || '—'}\n`;
+    body += `Partenza: ${fmtDate(d.returnDate)} ore ${d.returnTime || '—'}\n`;
+    if (d.hotelAddress) body += `Hotel: ${d.hotelAddress}\n`;
+    if (d.hotelMaps)    body += `Maps hotel: ${d.hotelMaps}\n`;
     body += '\n';
-  }
 
-  // Biglietti extra
-  if (d.globalTickets?.length) {
-    body += '--- BIGLIETTI EXTRA ---\n';
-    d.globalTickets.forEach(t => body += `• ${t.name}\n`);
-    body += '\n';
-  }
-
-  // Itinerario giorni
-  if (d.days?.length) {
-    body += '--- ITINERARIO ---\n\n';
-    d.days.forEach(day => {
-      body += `${fmtDate(day.date).toUpperCase()}\n`;
-
-      if (day.slots?.length) {
-        day.slots.forEach(s => {
-          body += `  ${s.time || '--:--'}  ${s.place || '(luogo non inserito)'}`;
-          if (s.mapsLink) body += `\n         Maps: ${s.mapsLink}`;
-          body += '\n';
-        });
-      } else {
-        body += '  (nessuna tappa)\n';
-      }
-
-      if (day.tickets?.length) {
-        body += '  Biglietti del giorno:\n';
-        day.tickets.forEach(t => body += `  • ${t.name}\n`);
-      }
+    // Biglietti trasporto
+    const at = d.transportTickets?.andata;
+    const rt = d.transportTickets?.ritorno;
+    if (at || rt) {
+      body += '--- BIGLIETTI TRASPORTO ---\n';
+      if (at) body += `Andata: ${at.name}\n`;
+      if (rt) body += `Ritorno: ${rt.name}\n`;
       body += '\n';
-    });
-  }
+    }
 
-  body += '---\nGenerato da Travel Assist';
+    // Biglietti extra città
+    if (d.globalTickets?.length) {
+      body += '--- BIGLIETTI EXTRA ---\n';
+      d.globalTickets.forEach(t => body += `• ${t.name}\n`);
+      body += '\n';
+    }
 
-  const subject = `Itinerario viaggio a ${d.city || 'destinazione'}`;
+    // Itinerario giorni
+    if (d.days?.length) {
+      body += '--- ITINERARIO ---\n\n';
+      d.days.forEach(day => {
+        body += `${fmtDate(day.date).toUpperCase()}\n`;
+        if (day.slots?.length) {
+          day.slots.forEach(s => {
+            body += `  ${s.time || '--:--'}  ${s.place || '(luogo non inserito)'}`;
+            if (s.mapsLink) body += `\n         Maps: ${s.mapsLink}`;
+            body += '\n';
+          });
+        } else {
+          body += '  (nessuna tappa)\n';
+        }
+        if (day.tickets?.length) {
+          body += '  Biglietti del giorno:\n';
+          day.tickets.forEach(t => body += `  • ${t.name}\n`);
+        }
+        body += '\n';
+      });
+    }
+
+    body += '='.repeat(40) + '\n\n';
+  });
+
+  body += 'Generato da Travel Assist';
+
+  const cityNames = cities.map(c => c.city).filter(Boolean).join(', ');
+  const subject = `Itinerario viaggio: ${cityNames || 'destinazione'}`;
   const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-  // Su iOS apre Mail direttamente
   window.location.href = mailtoLink;
   announce('Email aperta');
 }
@@ -1867,11 +2174,14 @@ function exportToMail() {
 function resetTrip() {
   if (!confirm('Sei sicuro? Tutti i dati del viaggio saranno cancellati.')) return;
   localStorage.removeItem('travelAssist_v2');
-  tripData = {
-    city:'', departureDate:'', departureTime:'', returnDate:'', returnTime:'',
-    transport:'', hotelAddress:'', hotelMaps:'', days:[], globalTickets:[],
-    transportTickets:{ andata:null, ritorno:null }
-  };
+  tripData = { cities: [] };
+  currentCityIdx = 0;
+  setupCityCount = 1;
+  setupCurrentStep = 0;
+  // Ripristina setup UI
+  document.getElementById('setup-step-choose-count').classList.remove('hidden');
+  document.getElementById('setup-step-city').classList.add('hidden');
+  document.querySelectorAll('.city-count-btn').forEach(b => b.classList.remove('selected'));
   showSection('setup');
   announce('Viaggio resettato');
 }
