@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Travel Assist" />
+  <meta name="description" content="La tua app di viaggio accessibile" />
+  <title>Travel Assist ✈️</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       TRAVEL ASSIST — CSS v2 (inline)
+       Accessibilità ipovisione grave — font grandi, alto contrasto
+       ============================================================ */
+    :root {
+      --bg-primary:    #e8f2ff;
+      --bg-secondary:  #cce0ff;
+      --bg-card:       #ffffff;
+      --bg-elevated:   #f0f7ff;
+      --border-color:  #93c5fd;
+      --accent-primary:   #e8a900;
+      --accent-secondary: #0ea5e9;
+      --accent-go:        #16a34a;
+      --accent-pdf:       #7c3aed;
+      --accent-danger:    #dc2626;
+      --text-primary:   #0f172a;
+      --text-secondary: #1e40af;
+      --text-muted:     #3b82f6;
+      --text-on-dark:   #ffffff;
+      --header-bg:      #1d4ed8;
+      --header-border:  #1e40af;
+      --shadow-lg:      0 8px 32px rgba(30,64,175,0.18);
+      --shadow-card:    0 2px 12px rgba(30,64,175,0.10);
+      --header-height:  7rem;
+      --btn-min:        4rem;
+      --radius-sm:      0.625rem;
+      --radius-md:      1rem;
+      --radius-lg:      1.5rem;
+      --text-xs:   1.5rem;
+      --text-sm:   1.875rem;
+      --text-base: 2.25rem;
+      --text-lg:   2.625rem;
+      --text-xl:   3rem;
+      --text-2xl:  3.5rem;
+      --text-3xl:  4rem;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 100%; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-primary);
+      background-image:
+        radial-gradient(circle at 15% 30%, rgba(14,165,233,0.12) 0%, transparent 50%),
+        radial-gradient(circle at 85% 70%, rgba(232,169,0,0.08) 0%, transparent 50%);
+      color: var(--text-primary);
+      font-size: var(--text-base);
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    .skip-link {
+      position: absolute; top: -999px; left: 0;
+      background: var(--accent-primary); color: #000;
+      padding: 1rem 2rem; font-size: var(--text-lg); font-weight: 700;
+      z-index: 9999; border-radius: 0 0 var(--radius-md) 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--accent-primary);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm);
+    }
+
+    .hidden { display: none !important; }
+
+    /* HEADER */
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: calc(var(--header-height) + env(safe-area-inset-top, 0));
+      padding-top: env(safe-area-inset-top, 0);
+      background: var(--header-bg);
+      border-bottom: 3px solid var(--header-border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding-left: 1rem; padding-right: 0.75rem; gap: 0.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .header-brand { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .brand-icon { font-size: 2rem; }
+    .brand-name {
+      font-size: var(--text-lg); font-weight: 900;
+      color: var(--accent-primary); letter-spacing: -0.02em; white-space: nowrap;
+    }
+    .header-actions { display: flex; gap: 0.375rem; align-items: center; }
+    .header-btn {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 0.125rem;
+      min-width: var(--btn-min); min-height: var(--btn-min);
+      padding: 0.5rem 0.75rem;
+      background: rgba(255,255,255,0.15); color: #fff;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: var(--radius-md);
+      cursor: pointer; font-family: inherit;
+      font-size: var(--text-xs); font-weight: 700;
+      transition: all 0.15s ease; white-space: nowrap;
+    }
+    .header-btn:hover, .header-btn:focus-visible {
+      background: var(--accent-primary); color: #000;
+      border-color: var(--accent-primary); transform: translateY(-1px);
+    }
+    .header-btn .btn-icon { font-size: 2rem; }
+    .header-btn .btn-label { font-size: 1rem; line-height: 1; font-weight: 800; }
+
+    /* MAIN */
+    .app-main {
+      padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0) + 1.25rem);
+      padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0));
+      min-height: 100vh;
+    }
+    .section { padding: 1.25rem 1rem; max-width: 820px; margin: 0 auto; }
+
+    /* SETUP */
+    .setup-card {
+      background: var(--bg-card); border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg); padding: 2rem 1.5rem; box-shadow: var(--shadow-lg);
+    }
+    .setup-title {
+      font-size: var(--text-2xl); font-weight: 900;
+      color: var(--header-bg); margin-bottom: 0.5rem; line-height: 1.2;
+    }
+    .setup-subtitle {
+      color: var(--text-secondary); margin-bottom: 2rem;
+      font-size: var(--text-base); font-weight: 600;
+    }
+    .form-group { margin-bottom: 1.375rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-label {
+      display: block; font-size: var(--text-sm); font-weight: 700;
+      color: var(--text-primary); margin-bottom: 0.5rem; letter-spacing: 0.01em;
+    }
+    .form-input {
+      width: 100%; min-height: var(--btn-min); padding: 0.875rem 1rem;
+      background: var(--bg-elevated); border: 2px solid var(--border-color);
+      border-radius: var(--radius-md); color: var(--text-primary);
+      font-size: var(--text-base); font-family: inherit;
+      transition: border-color 0.15s ease;
+      -webkit-appearance: none; appearance: none;
+    }
+    .form-input:focus { border-color: var(--header-bg); outline: none; box-shadow: 0 0 0 3px rgba(29,78,216,0.2); }
+    .form-input::placeholder { color: #94a3b8; }
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231e40af' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 1rem center;
+      padding-right: 2.75rem; cursor: pointer;
+    }
+    .form-hint { margin-top: 0.375rem; font-size: var(--text-xs); color: var(--text-muted); font-style: italic; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.5rem; min-height: var(--btn-min); padding: 0.875rem 1.5rem;
+      border: none; border-radius: var(--radius-md);
+      font-family: inherit; font-size: var(--text-base); font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.15s ease; letter-spacing: 0.01em;
+    }
+    .btn--primary { background: var(--header-bg); color: #fff; }
+    .btn--primary:hover, .btn--primary:focus-visible { background: #1e40af; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(29,78,216,0.4); }
+    .btn--danger { background: var(--accent-danger); color: #fff; }
+    .btn--danger:hover { background: #b91c1c; }
+    .btn--ghost { background: transparent; color: var(--text-secondary); border: 2px solid var(--border-color); }
+    .btn--ghost:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+    .btn--full { width: 100%; margin-top: 0.5rem; }
+    .btn--add-day {
+      width: 100%; background: transparent; border: 2px dashed var(--border-color);
+      color: var(--text-secondary); border-radius: var(--radius-md);
+      padding: 1rem; font-size: var(--text-base); font-family: inherit;
+      font-weight: 700; cursor: pointer; margin-top: 1rem; transition: all 0.15s ease;
+    }
+    .btn--add-day:hover { border-color: var(--header-bg); color: var(--header-bg); background: rgba(29,78,216,0.05); }
+
+    /* TRIP INFO BAR */
+    .trip-info-bar {
+      background: var(--bg-card); border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; box-shadow: var(--shadow-card);
+    }
+    .trip-info-item { display: flex; flex-direction: column; gap: 0.25rem; }
+    .info-label { font-size: var(--text-xs); color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .info-value { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); }
+
+    /* TRANSPORT POCKET */
+    .transport-pocket {
+      background: var(--bg-card); border: 2px solid var(--accent-secondary);
+      border-radius: var(--radius-lg); margin-bottom: 1.25rem;
+      overflow: hidden; box-shadow: var(--shadow-card);
+    }
+    .transport-pocket-header {
+      background: var(--accent-secondary); color: #fff;
+      padding: 0.875rem 1.25rem;
+      display: flex; align-items: center; gap: 0.625rem;
+      font-size: var(--text-base); font-weight: 700;
+    }
+    .pocket-badge {
+      margin-left: auto; background: rgba(255,255,255,0.25);
+      padding: 0.25rem 0.75rem; border-radius: 2rem;
+      font-size: var(--text-xs); font-weight: 600;
+    }
+    .transport-tickets-grid { display: flex; flex-direction: column; gap: 1px; background: var(--border-color); }
+    .transport-ticket-slot { background: var(--bg-elevated); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .ticket-slot-label { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); }
+    .pocket-upload-zone {
+      background: var(--bg-card); border: 2px dashed var(--border-color);
+      border-radius: var(--radius-md); padding: 1rem 0.75rem;
+      text-align: center; cursor: pointer; transition: all 0.15s ease;
+      font-size: var(--text-xs); color: var(--text-secondary);
+      display: flex; flex-direction: column; align-items: center; gap: 0.375rem;
+      min-height: 6rem; justify-content: center;
+    }
+    .pocket-upload-zone:hover, .pocket-upload-zone:focus-visible { border-color: var(--accent-secondary); color: var(--accent-secondary); background: rgba(14,165,233,0.05); }
+    .pocket-upload-zone span:first-child { font-size: 1.75rem; }
+    .upload-hint { font-size: 0.75rem; color: var(--text-muted); }
+    .transport-ticket-display { display: flex; flex-direction: column; gap: 0.5rem; }
+    .transport-ticket-item {
+      display: grid; grid-template-columns: 1.5rem 1fr auto auto;
+      align-items: center; gap: 0.4rem;
+      background: var(--bg-card); border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm); padding: 0.5rem 0.6rem;
+    }
+    .transport-ticket-name { font-size: var(--text-xs); font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .transport-ticket-view { background: var(--accent-primary); color: #000; border: none; border-radius: var(--radius-sm); padding: 0.375rem 0.75rem; font-size: var(--text-xs); font-weight: 700; cursor: pointer; min-height: 2.25rem; transition: all 0.15s ease; }
+    .transport-ticket-view:hover { background: #d97706; }
+    .transport-ticket-del { background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0.375rem; font-size: 1rem; border-radius: var(--radius-sm); transition: color 0.15s; }
+    .transport-ticket-del:hover { color: var(--accent-danger); }
+
+    /* CALENDAR */
+    .calendar-container { margin-top: 0.25rem; }
+    .calendar-heading-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.875rem; border-bottom: 2px solid var(--border-color); }
+    .calendar-heading { font-size: var(--text-xl); font-weight: 900; color: var(--text-primary); }
+    .days-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    /* DAY CARD */
+    .day-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+    .day-card.is-today { border-color: var(--accent-primary); border-width: 3px; }
+    .day-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; background: var(--bg-elevated); border: none; width: 100%; text-align: left; font-family: inherit; transition: background 0.15s ease; }
+    .day-header:hover { background: var(--bg-secondary); }
+    .day-header-left { display: flex; align-items: center; gap: 0.875rem; }
+    .day-number { font-size: var(--text-xl); font-weight: 900; color: var(--header-bg); font-family: 'JetBrains Mono', monospace; min-width: 2.25rem; }
+    .day-date { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); }
+    .day-label { font-size: var(--text-xs); color: var(--text-muted); }
+    .day-toggle { font-size: var(--text-base); color: var(--text-secondary); transition: transform 0.2s ease; }
+    .day-card.expanded .day-toggle { transform: rotate(180deg); }
+    .day-body { display: none; padding: 1.25rem; gap: 1.25rem; flex-direction: column; }
+    .day-card.expanded .day-body { display: flex; }
+
+    /* SLOTS */
+    .slots-section-title { font-size: var(--text-xs); color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.875rem; }
+    .slots-list { display: flex; flex-direction: column; gap: 1rem; }
+    .slot-item { background: var(--bg-elevated); border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; display: flex; flex-direction: column; gap: 0.875rem; }
+    .slot-row { display: grid; grid-template-columns: auto 1fr; gap: 0.75rem; align-items: start; }
+    .slot-time { min-width: 9rem; }
+    .slot-place { flex: 1; }
+    .slot-maps-row { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; align-items: center; }
+    .slot-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .slot-input { width: 100%; min-height: 3rem; padding: 0.75rem 1rem; background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--text-sm); font-family: inherit; transition: border-color 0.15s ease; }
+    .slot-input:focus { border-color: var(--header-bg); outline: none; }
+    .slot-input::placeholder { color: #94a3b8; }
+
+    .btn--go { flex: 1; min-width: 9rem; background: var(--accent-go); color: #fff; border: none; border-radius: var(--radius-sm); min-height: 3.25rem; padding: 0.75rem 1rem; font-family: inherit; font-size: var(--text-sm); font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; transition: all 0.15s ease; }
+    .btn--go:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,0.35); }
+    .btn--save-slot { background: var(--accent-go); color: #fff; border: none; border-radius: var(--radius-sm); min-height: 3.25rem; padding: 0.75rem 1rem; font-family: inherit; font-size: var(--text-sm); font-weight: 700; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
+    .btn--save-slot:hover { background: #15803d; }
+    .slot-saved .slot-row, .slot-saved .slot-maps-row { opacity: 0.6; pointer-events: none; }
+    .slot-saved { border-color: var(--accent-go) !important; }
+    .slot-saved .btn--save-slot { background: var(--accent-secondary); }
+    .btn--remove-slot { background: transparent; border: 2px solid var(--border-color); color: var(--text-muted); border-radius: var(--radius-sm); min-height: 3.25rem; padding: 0.75rem 0.875rem; font-family: inherit; font-size: var(--text-sm); cursor: pointer; transition: all 0.15s ease; }
+    .btn--remove-slot:hover { border-color: var(--accent-danger); color: var(--accent-danger); }
+    .btn--maps-search { background: var(--accent-secondary); color: #fff; border: none; border-radius: var(--radius-sm); min-height: 3rem; padding: 0.625rem 1rem; font-family: inherit; font-size: var(--text-xs); font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .btn--maps-search:hover { background: #0284c7; }
+    .btn--add-slot { background: rgba(220,38,38,0.08); border: 2px dashed var(--accent-danger); color: var(--accent-danger); border-radius: var(--radius-sm); padding: 0.875rem 1rem; font-family: inherit; font-size: var(--text-sm); font-weight: 800; cursor: pointer; width: 100%; transition: all 0.15s ease; margin-top: 0.25rem; }
+    .btn--add-slot:hover { background: var(--accent-danger); color: #fff; }
+
+    /* AUTOCOMPLETE */
+    .places-dropdown { position: fixed; z-index: 500; background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); max-height: 16rem; overflow-y: auto; min-width: 18rem; max-width: 90vw; }
+    .place-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.875rem 1rem; cursor: pointer; border-bottom: 1px solid var(--bg-secondary); transition: background 0.1s ease; }
+    .place-option:last-child { border-bottom: none; }
+    .place-option:hover, .place-option:focus { background: var(--bg-secondary); outline: none; }
+    .place-option-icon { font-size: 1.375rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .place-option-text { display: flex; flex-direction: column; }
+    .place-option-name { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); }
+    .place-option-detail { font-size: var(--text-xs); color: var(--text-muted); }
+    .place-option-loading { padding: 1.25rem; text-align: center; color: var(--text-muted); font-size: var(--text-sm); display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+
+    /* TICKET POCKET giornaliero */
+    .ticket-pocket { border-top: 2px solid var(--border-color); padding-top: 1rem; }
+    .ticket-pocket-title { font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .tickets-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
+    .ticket-item { display: grid; grid-template-columns: 1.5rem 1fr auto auto; align-items: center; gap: 0.5rem; background: var(--bg-card); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1rem; transition: border-color 0.15s; }
+    .ticket-item:hover { border-color: var(--accent-primary); }
+    .ticket-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .ticket-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .ticket-view-btn { background: var(--accent-primary); color: #000; border: none; border-radius: var(--radius-sm); padding: 0.5rem 0.875rem; font-family: inherit; font-size: var(--text-xs); font-weight: 700; cursor: pointer; min-height: 2.75rem; flex-shrink: 0; transition: all 0.15s; }
+    .ticket-view-btn:hover { background: #d97706; }
+    .ticket-delete-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0.5rem; font-size: 1.125rem; border-radius: var(--radius-sm); transition: color 0.15s; min-height: 2.75rem; }
+    .ticket-delete-btn:hover { color: var(--accent-danger); }
+
+    /* MODALS */
+    .modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+    .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    .modal-content { position: relative; background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 1.75rem; width: 100%; max-width: 620px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg); padding-bottom: calc(1.75rem + env(safe-area-inset-bottom, 0)); }
+    .modal-content h2 { font-size: var(--text-xl); font-weight: 900; color: var(--text-primary); margin-bottom: 0.25rem; }
+    .modal-subtitle { color: var(--text-secondary); margin-bottom: 1.25rem; font-size: var(--text-sm); }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: var(--bg-elevated); border: 2px solid var(--border-color); color: var(--text-primary); border-radius: 50%; width: 2.75rem; height: 2.75rem; font-size: 1.125rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .modal-close:hover { background: var(--accent-danger); color: #fff; border-color: var(--accent-danger); }
+
+    /* UPLOAD ZONE */
+    .upload-zone { background: var(--bg-elevated); border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; font-size: var(--text-base); color: var(--text-secondary); margin-bottom: 1rem; }
+    .upload-zone:hover, .upload-zone:focus-visible { border-color: var(--header-bg); background: rgba(29,78,216,0.05); color: var(--header-bg); }
+    .upload-zone span:first-child { font-size: 2.75rem; }
+
+    /* LOADING/ERROR */
+    .loading-state { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2.5rem; color: var(--text-secondary); font-size: var(--text-base); }
+    .spinner { width: 3rem; height: 3rem; border: 3px solid var(--border-color); border-top-color: var(--header-bg); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-state { padding: 1.5rem; background: rgba(220,38,38,0.08); border: 2px solid rgba(220,38,38,0.3); border-radius: var(--radius-md); color: var(--accent-danger); text-align: center; font-size: var(--text-base); }
+    .location-info { padding: 0.875rem 1rem; background: var(--bg-elevated); border-radius: var(--radius-md); color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: 1rem; }
+
+    /* FULLSCREEN VIEWER */
+    .fullscreen-viewer { position: fixed; inset: 0; z-index: 300; background: #000; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; overflow: hidden; }
+    .viewer-close { position: fixed; top: calc(1.25rem + env(safe-area-inset-top, 0)); right: 1.25rem; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 2px solid rgba(255,255,255,0.3); color: #fff; border-radius: 50%; width: 3.25rem; height: 3.25rem; font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+    .viewer-close:hover { background: var(--accent-danger); border-color: var(--accent-danger); }
+    .viewer-content { width: 100%; flex: 1; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: calc(4rem + env(safe-area-inset-top, 0)) 1rem calc(2rem + env(safe-area-inset-bottom, 0)); }
+    .viewer-hint { position: absolute; bottom: calc(1rem + env(safe-area-inset-bottom, 0)); left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); color: rgba(255,255,255,0.8); padding: 0.5rem 1.25rem; border-radius: 2rem; font-size: var(--text-xs); white-space: nowrap; }
+
+    /* SETTINGS */
+    .settings-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem 1.5rem; box-shadow: var(--shadow-card); }
+    .settings-card h2 { font-size: var(--text-xl); font-weight: 900; margin-bottom: 0.5rem; }
+    .settings-card p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: var(--text-base); }
+
+    /* TOAST */
+    .toast-container { position: fixed; bottom: calc(2rem + env(safe-area-inset-bottom, 0)); left: 50%; transform: translateX(-50%); z-index: 600; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; width: 90%; max-width: 420px; }
+    .toast { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.25rem; font-size: var(--text-sm); font-weight: 600; text-align: center; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+    .toast--success { border-color: var(--accent-go); color: var(--accent-go); }
+    .toast--error   { border-color: var(--accent-danger); color: var(--accent-danger); }
+    .toast--info    { border-color: var(--accent-secondary); color: var(--accent-secondary); }
+    @keyframes toastIn  { from { opacity:0; transform:translateY(1rem); } to { opacity:1; transform:translateY(0); } }
+    @keyframes toastOut { to   { opacity:0; transform:translateY(-1rem); } }
+
+    /* RESPONSIVE */
+    @media (max-width: 520px) {
+      .brand-name { display: none; }
+      .form-row { grid-template-columns: 1fr; }
+      .trip-info-bar { grid-template-columns: 1fr; }
+      .header-btn { padding: 0.375rem 0.5rem; min-width: 3.5rem; }
+      .header-btn .btn-label { font-size: 0.875rem; }
+      .slot-row { grid-template-columns: 1fr; }
+      .slot-maps-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 380px) {
+      :root {
+        --text-xs:   1.25rem;
+        --text-sm:   1.5rem;
+        --text-base: 1.875rem;
+        --text-lg:   2.25rem;
+        --text-xl:   2.625rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Vai al contenuto principale</a>
+
+<header class="app-header" role="banner">
+  <div class="header-brand">
+    <span class="brand-icon" aria-hidden="true">✈</span>
+    <span class="brand-name">Travel Assist</span>
+  </div>
+  <nav class="header-actions" aria-label="Azioni rapide">
+    <button class="header-btn" onclick="openTicketModal()" aria-label="Biglietti di mobilità">
+      <span class="btn-icon" aria-hidden="true">🎫</span>
+      <span class="btn-label">Biglietti</span>
+    </button>
+    <button class="header-btn" onclick="openHotel()" aria-label="Naviga verso l'hotel">
+      <span class="btn-icon" aria-hidden="true">🏨</span>
+      <span class="btn-label">Hotel</span>
+    </button>
+    <button class="header-btn" onclick="openAttractions()" aria-label="Attrazioni vicino a te">
+      <span class="btn-icon" aria-hidden="true">🔍</span>
+      <span class="btn-label">Info</span>
+    </button>
+    <button class="header-btn" onclick="showSection('settings')" aria-label="Impostazioni">
+      <span class="btn-icon" aria-hidden="true">⚙</span>
+      <span class="btn-label">Config</span>
+    </button>
+  </nav>
+</header>
+
+<main id="main-content" class="app-main">
+
+  <!-- SETUP -->
+  <section id="section-setup" class="section section--setup" aria-labelledby="setup-title">
+    <div class="setup-card">
+      <h1 id="setup-title" class="setup-title">Benvenuto in Travel Assist ✈️</h1>
+      <p class="setup-subtitle">Configura il tuo viaggio per iniziare</p>
+      <form id="setup-form" novalidate>
+        <div class="form-group">
+          <label for="city" class="form-label">Città di destinazione</label>
+          <input type="text" id="city" name="city" class="form-input" placeholder="es. Roma, Barcellona..." required aria-required="true" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="departure-date" class="form-label">Data Partenza</label>
+            <input type="date" id="departure-date" name="departure-date" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label for="departure-time" class="form-label">Ora Partenza</label>
+            <input type="time" id="departure-time" name="departure-time" class="form-input" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="return-date" class="form-label">Data Ritorno</label>
+            <input type="date" id="return-date" name="return-date" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label for="return-time" class="form-label">Ora Ritorno</label>
+            <input type="time" id="return-time" name="return-time" class="form-input" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="transport" class="form-label">Mezzo di trasporto</label>
+          <select id="transport" name="transport" class="form-input form-select" required>
+            <option value="">Seleziona...</option>
+            <option value="autobus">🚌 Autobus</option>
+            <option value="auto">🚗 Auto</option>
+            <option value="treno">🚂 Treno</option>
+            <option value="aereo">✈️ Aereo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="hotel-address" class="form-label">Indirizzo Hotel</label>
+          <input type="text" id="hotel-address" name="hotel-address" class="form-input" placeholder="Via, Numero, Città" autocomplete="street-address" />
+        </div>
+        <div class="form-group">
+          <label for="hotel-maps" class="form-label">🗺 Link Google Maps Hotel</label>
+          <input type="url" id="hotel-maps" name="hotel-maps" class="form-input" placeholder="https://maps.google.com/..." />
+          <p class="form-hint">Apri Maps → cerca hotel → copia il link dalla barra in alto</p>
+        </div>
+        <button type="submit" class="btn btn--primary btn--full">Inizia il Viaggio →</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="section-dashboard" class="section section--dashboard hidden" aria-labelledby="dashboard-title">
+    <div class="trip-info-bar" role="region" aria-label="Informazioni viaggio">
+      <div class="trip-info-item">
+        <span class="info-label">Destinazione</span>
+        <span class="info-value" id="display-city">—</span>
+      </div>
+      <div class="trip-info-item">
+        <span class="info-label">Partenza</span>
+        <span class="info-value" id="display-departure">—</span>
+      </div>
+      <div class="trip-info-item">
+        <span class="info-label">Ritorno</span>
+        <span class="info-value" id="display-return">—</span>
+      </div>
+    </div>
+
+    <div class="transport-pocket" role="region" aria-label="Biglietti trasporto andata e ritorno">
+      <div class="transport-pocket-header">
+        <span id="transport-icon-display" aria-hidden="true">🚆</span>
+        <span id="display-transport-label">Biglietti Trasporto</span>
+        <span class="pocket-badge">sempre visibile</span>
+      </div>
+      <div class="transport-tickets-grid">
+        <div class="transport-ticket-slot">
+          <div class="ticket-slot-label">🟢 Andata</div>
+          <div class="pocket-upload-zone" role="button" tabindex="0"
+            aria-label="Carica biglietto di andata"
+            onclick="document.getElementById('input-andata').click()"
+            onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+            <span aria-hidden="true">📎</span>
+            <span>Carica biglietto PDF</span>
+            <span class="upload-hint">Solo PDF</span>
+          </div>
+          <input type="file" id="input-andata" accept=".pdf" class="hidden" aria-label="Seleziona biglietto andata" onchange="handleTransportTicket(event,'andata')" />
+          <div id="ticket-andata-display" class="transport-ticket-display" aria-live="polite"></div>
+        </div>
+        <div class="transport-ticket-slot">
+          <div class="ticket-slot-label">🔴 Ritorno</div>
+          <div class="pocket-upload-zone" role="button" tabindex="0"
+            aria-label="Carica biglietto di ritorno"
+            onclick="document.getElementById('input-ritorno').click()"
+            onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+            <span aria-hidden="true">📎</span>
+            <span>Carica biglietto PDF</span>
+            <span class="upload-hint">Solo PDF</span>
+          </div>
+          <input type="file" id="input-ritorno" accept=".pdf" class="hidden" aria-label="Seleziona biglietto ritorno" onchange="handleTransportTicket(event,'ritorno')" />
+          <div id="ticket-ritorno-display" class="transport-ticket-display" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="calendar-container" class="calendar-container" role="region" aria-label="Itinerario giornaliero">
+      <div class="calendar-heading-row">
+        <h2 id="dashboard-title" class="calendar-heading">Itinerario</h2>
+      </div>
+      <div id="days-list" class="days-list" aria-label="Lista giorni del viaggio"></div>
+      <button class="btn btn--add-day" onclick="addDay()">+ Aggiungi giorno</button>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="section-settings" class="section section--settings hidden" aria-labelledby="settings-title">
+    <div class="settings-card">
+      <h2 id="settings-title">Configurazione Viaggio</h2>
+      <p>Puoi resettare tutti i dati e ricominciare da capo.</p>
+      <button class="btn btn--danger btn--full" onclick="resetTrip()">🔄 Resetta e Riconfigura</button>
+      <button class="btn btn--ghost btn--full" onclick="showSection('dashboard')" style="margin-top:0.75rem">← Torna all'itinerario</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL: Biglietti extra -->
+<div id="modal-ticket" class="modal hidden" role="dialog" aria-labelledby="modal-ticket-title" aria-modal="true">
+  <div class="modal-overlay" onclick="closeModal('modal-ticket')"></div>
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('modal-ticket')" aria-label="Chiudi">✕</button>
+    <h2 id="modal-ticket-title">🎫 Biglietti Extra</h2>
+    <p class="modal-subtitle">Musei, bus locali, attrazioni...</p>
+    <div class="upload-zone" id="global-upload-zone" role="button" tabindex="0"
+      aria-label="Clicca o trascina file qui"
+      onclick="document.getElementById('global-file-input').click()"
+      onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+      <span aria-hidden="true">📁</span>
+      <span>Clicca o trascina PDF qui</span>
+      <span class="upload-hint">Solo PDF</span>
+    </div>
+    <input type="file" id="global-file-input" accept=".pdf" multiple class="hidden" onchange="handleGlobalFileUpload(event)" />
+    <div id="global-tickets-list" class="tickets-list" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- MODAL: Attrazioni -->
+<div id="modal-attractions" class="modal hidden" role="dialog" aria-labelledby="modal-attractions-title" aria-modal="true">
+  <div class="modal-overlay" onclick="closeModal('modal-attractions')"></div>
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('modal-attractions')" aria-label="Chiudi">✕</button>
+    <h2 id="modal-attractions-title">🔍 Attrazioni Vicino a Te</h2>
+    <div id="attractions-loading" class="loading-state" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <span>Rilevamento posizione...</span>
+    </div>
+    <div id="attractions-content" class="hidden">
+      <p id="attractions-location" class="location-info"></p>
+      <a id="btn-attractions-maps" href="#" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn--full">🗺 Cerca Attrazioni su Maps</a>
+    </div>
+    <div id="attractions-error" class="hidden error-state">
+      <p>Impossibile rilevare la posizione. Verifica i permessi GPS.</p>
+    </div>
+  </div>
+</div>
+
+<!-- AUTOCOMPLETE DROPDOWN -->
+<div id="places-dropdown" class="places-dropdown hidden" role="listbox" aria-label="Suggerimenti luoghi"></div>
+
+<!-- FULLSCREEN VIEWER -->
+<div id="fullscreen-viewer" class="fullscreen-viewer hidden" role="dialog" aria-modal="true">
+  <button class="viewer-close" onclick="closeViewer()" aria-label="Chiudi visualizzatore">✕</button>
+  <div class="viewer-content" id="viewer-content"></div>
+  <div class="viewer-hint">Pizzica per zoomare • Doppio tap per resettare</div>
+</div>
+
+<div id="sr-announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+<script>
+'use strict';
+
+let tripData = {
+  city: '', departureDate: '', departureTime: '',
+  returnDate: '', returnTime: '', transport: '',
+  hotelAddress: '', hotelMaps: '',
+  days: [], globalTickets: [],
+  transportTickets: { andata: null, ritorno: null }
+};
+
+let currentPosition = null;
+let dropdownTarget = null;
+let dropdownDayIdx = null;
+let dropdownSlotIdx = null;
+let searchTimeout = null;
+
+// ---- INIT ----
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  createToastContainer();
+
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date().toTimeString().slice(0,5);
+  safeSet('departure-date', today);
+  safeSet('departure-time', now);
+  safeSet('return-date', today);
+  safeSet('return-time', now);
+
+  document.getElementById('setup-form').addEventListener('submit', handleSetup);
+
+  if (tripData.city) {
+    renderDashboard();
+    showSection('dashboard');
+  } else {
+    showSection('setup');
+  }
+
+  document.addEventListener('click', (e) => {
+    const dd = document.getElementById('places-dropdown');
+    if (!dd.contains(e.target) && e.target.id !== 'place-input-' + dropdownDayIdx + '-' + dropdownSlotIdx) {
+      closeDropdown();
+    }
+  });
+});
+
+function safeSet(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+
+// ---- STORAGE ----
+function saveData() {
+  try { localStorage.setItem('travelAssist_v2', JSON.stringify(tripData)); } catch(e) {}
+}
+function loadData() {
+  try {
+    const s = localStorage.getItem('travelAssist_v2');
+    if (s) tripData = { ...tripData, ...JSON.parse(s) };
+  } catch(e) {}
+}
+
+// ---- SEZIONI ----
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('section-' + name)?.classList.remove('hidden');
+  announce('Sezione ' + name);
+}
+
+// ---- SETUP ----
+function handleSetup(e) {
+  e.preventDefault();
+  const f = e.target;
+  const city = f.city.value.trim();
+  if (!city) { showToast('Inserisci la città di destinazione', 'error'); f.city.focus(); return; }
+
+  tripData.city          = city;
+  tripData.departureDate = f['departure-date'].value;
+  tripData.departureTime = f['departure-time'].value;
+  tripData.returnDate    = f['return-date'].value;
+  tripData.returnTime    = f['return-time'].value;
+  tripData.transport     = f.transport.value;
+  tripData.hotelAddress  = f['hotel-address'].value.trim();
+  tripData.hotelMaps     = f['hotel-maps'].value.trim();
+  tripData.days          = generateDays(tripData.departureDate, tripData.returnDate);
+
+  saveData();
+  renderDashboard();
+  showSection('dashboard');
+  announce('Viaggio configurato');
+}
+
+// ---- GIORNI ----
+function generateDays(start, end) {
+  if (!start || !end) return [];
+  const days = [];
+  const parseParts = s => s.split('-').map(Number);
+  const [sy, sm, sd] = parseParts(start);
+  const [ey, em, ed] = parseParts(end);
+  let cur = new Date(sy, sm - 1, sd);
+  const last = new Date(ey, em - 1, ed);
+  let n = 1;
+  while (cur <= last) {
+    const dateStr = cur.getFullYear() + '-' +
+      String(cur.getMonth() + 1).padStart(2, '0') + '-' +
+      String(cur.getDate()).padStart(2, '0');
+    days.push({ id: 'day' + n, date: dateStr, slots: [], tickets: [] });
+    cur.setDate(cur.getDate() + 1);
+    n++;
+  }
+  return days;
+}
+
+function addDay() {
+  const last = tripData.days[tripData.days.length - 1];
+  let nextDateStr;
+  if (last) {
+    const parts = last.date.split('-');
+    const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]) + 1);
+    nextDateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  } else {
+    const today = new Date();
+    nextDateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  }
+  const d = { id: 'day' + (tripData.days.length + 1), date: nextDateStr, slots: [], tickets: [] };
+  tripData.days.push(d);
+  saveData();
+  const container = document.getElementById('days-list');
+  const el = createDayCard(d, tripData.days.length - 1);
+  container.appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  announce('Giorno aggiunto');
+}
+
+function formatDate(s) {
+  if (!s) return '—';
+  return new Date(s + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' });
+}
+function isToday(s) { return s === new Date().toISOString().split('T')[0]; }
+
+// ---- DASHBOARD ----
+function renderDashboard() {
+  setText('display-city', tripData.city || '—');
+  setText('display-departure', tripData.departureDate ? formatDate(tripData.departureDate) + ' ' + tripData.departureTime : '—');
+  setText('display-return', tripData.returnDate ? formatDate(tripData.returnDate) + ' ' + tripData.returnTime : '—');
+
+  const icons = { autobus:'🚌', auto:'🚗', treno:'🚂', aereo:'✈️' };
+  const labels = { autobus:'Biglietti Autobus', auto:'Biglietti Auto', treno:'Biglietti Treno', aereo:'Biglietti Aereo' };
+  setText('transport-icon-display', icons[tripData.transport] || '🚆');
+  setText('display-transport-label', labels[tripData.transport] || 'Biglietti Trasporto');
+
+  renderTransportTickets();
+  renderDaysList();
+  renderGlobalTickets();
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ---- BIGLIETTI TRASPORTO ----
+function renderTransportTickets() {
+  ['andata', 'ritorno'].forEach(dir => {
+    const ticket = tripData.transportTickets?.[dir];
+    const display = document.getElementById('ticket-' + dir + '-display');
+    if (!display) return;
+    const slot = display.closest('.transport-ticket-slot');
+    const zone = slot ? slot.querySelector('.pocket-upload-zone') : null;
+    const input = document.getElementById('input-' + dir);
+    display.innerHTML = '';
+    if (ticket) {
+      display.appendChild(buildTransportTicketEl(ticket, dir));
+      if (zone) zone.classList.add('hidden');
+    } else {
+      if (zone) zone.classList.remove('hidden');
+      if (input) input.value = '';
+    }
+  });
+}
+
+function buildTransportTicketEl(ticket, dir) {
+  const el = document.createElement('div');
+  el.className = 'transport-ticket-item';
+  el.innerHTML = `
+    <span style="font-size:1.25rem">📄</span>
+    <span class="transport-ticket-name">${esc(ticket.name)}</span>
+    <button class="transport-ticket-view" aria-label="Visualizza biglietto ${dir}">Apri</button>
+    <button class="transport-ticket-del" aria-label="Elimina biglietto ${dir}">🗑</button>
+  `;
+  el.querySelector('.transport-ticket-view').addEventListener('click', () => openViewerFromTicket(ticket));
+  el.querySelector('.transport-ticket-del').addEventListener('click', () => deleteTransportTicket(dir));
+  return el;
+}
+
+function handleTransportTicket(event, dir) {
+  const file = event.target.files[0];
+  if (!file) return;
+  readFile(file, ticket => {
+    if (!tripData.transportTickets) tripData.transportTickets = {};
+    tripData.transportTickets[dir] = ticket;
+    saveData();
+    const display = document.getElementById('ticket-' + dir + '-display');
+    if (display) { display.innerHTML = ''; display.appendChild(buildTransportTicketEl(ticket, dir)); }
+    const slot = display ? display.closest('.transport-ticket-slot') : null;
+    if (slot) { const zone = slot.querySelector('.pocket-upload-zone'); if (zone) zone.classList.add('hidden'); }
+    event.target.value = '';
+    showToast('Biglietto ' + dir + ' caricato ✓', 'success');
+    announce('Biglietto ' + dir + ' caricato');
+  });
+}
+
+function deleteTransportTicket(dir) {
+  tripData.transportTickets[dir] = null;
+  saveData();
+  const display = document.getElementById('ticket-' + dir + '-display');
+  if (display) display.innerHTML = '';
+  if (display) {
+    const slot = display.closest('.transport-ticket-slot');
+    if (slot) { const zone = slot.querySelector('.pocket-upload-zone'); if (zone) zone.classList.remove('hidden'); }
+  }
+  const input = document.getElementById('input-' + dir);
+  if (input) input.value = '';
+  showToast('Biglietto eliminato', 'info');
+}
+
+// ---- LISTA GIORNI ----
+function renderDaysList() {
+  const container = document.getElementById('days-list');
+  container.innerHTML = '';
+  if (!tripData.days.length) {
+    container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;font-size:var(--text-base)">Nessun giorno configurato</p>';
+    return;
+  }
+  tripData.days.forEach((day, idx) => {
+    const el = createDayCard(day, idx);
+    container.appendChild(el);
+    if (isToday(day.date)) { el.classList.add('expanded', 'is-today'); el.querySelector('.day-header').setAttribute('aria-expanded', 'true'); }
+  });
+}
+
+function createDayCard(day, idx) {
+  const card = document.createElement('article');
+  card.className = 'day-card';
+  card.id = 'card-' + day.id;
+
+  const header = document.createElement('button');
+  header.className = 'day-header';
+  header.setAttribute('aria-expanded', 'false');
+  header.setAttribute('aria-controls', 'body-' + day.id);
+  header.setAttribute('aria-label', 'Giorno ' + (idx+1) + ': ' + formatDate(day.date));
+  header.innerHTML = `
+    <div class="day-header-left">
+      <span class="day-number">${String(idx+1).padStart(2,'0')}</span>
+      <div class="day-info">
+        <span class="day-date">${formatDate(day.date)}</span>
+        <span class="day-label">${isToday(day.date) ? '📍 Oggi' : 'Giorno ' + (idx+1)}</span>
+      </div>
+    </div>
+    <span class="day-toggle" aria-hidden="true">▼</span>
+  `;
+  header.addEventListener('click', () => {
+    const exp = card.classList.toggle('expanded');
+    header.setAttribute('aria-expanded', String(exp));
+  });
+
+  const body = document.createElement('div');
+  body.className = 'day-body';
+  body.id = 'body-' + day.id;
+  body.setAttribute('role', 'region');
+
+  const slotsSec = document.createElement('div');
+  slotsSec.innerHTML = '<div class="slots-section-title">📍 Tappe del giorno</div>';
+  const slotsList = document.createElement('div');
+  slotsList.className = 'slots-list';
+  slotsList.id = 'slots-' + day.id;
+  (day.slots || []).forEach((slot, si) => slotsList.appendChild(createSlotItem(day, idx, slot, si)));
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn--add-slot';
+  addBtn.textContent = '+ Aggiungi Tappa';
+  addBtn.addEventListener('click', () => addSlot(idx));
+  slotsSec.appendChild(slotsList);
+  slotsSec.appendChild(addBtn);
+
+  const pocket = createDayTicketPocket(day, idx);
+
+  body.appendChild(slotsSec);
+  body.appendChild(pocket);
+  card.appendChild(header);
+  card.appendChild(body);
+  return card;
+}
+
+// ---- SLOT (TAPPA) ----
+function createSlotItem(day, dayIdx, slot, slotIdx) {
+  const item = document.createElement('div');
+  item.className = 'slot-item';
+  item.id = 'slot-' + day.id + '-' + slotIdx;
+
+  item.innerHTML = `
+    <div class="slot-row">
+      <div class="slot-time">
+        <label class="sr-only" for="time-${day.id}-${slotIdx}">Orario</label>
+        <input type="time" class="slot-input" id="time-${day.id}-${slotIdx}" value="${slot.time || ''}" aria-label="Orario tappa ${slotIdx+1}" />
+      </div>
+      <div class="slot-place">
+        <label class="sr-only" for="place-input-${dayIdx}-${slotIdx}">Luogo</label>
+        <input type="text" class="slot-input" id="place-input-${dayIdx}-${slotIdx}"
+          value="${esc(slot.place || '')}" placeholder="Luogo... (es. Colosseo)"
+          aria-label="Luogo tappa ${slotIdx+1}" autocomplete="off" />
+      </div>
+    </div>
+    <div class="slot-maps-row">
+      <input type="url" class="slot-input slot-maps-input" id="maps-input-${dayIdx}-${slotIdx}"
+        value="${esc(slot.mapsLink || '')}" placeholder="Link Google Maps (incolla o cerca sopra)"
+        aria-label="Link Google Maps tappa ${slotIdx+1}" />
+      <button class="btn--maps-search" type="button" aria-label="Cerca su Google Maps"
+        onclick="searchOnMaps(${dayIdx},${slotIdx})">🔍 Maps</button>
+    </div>
+    <div class="slot-actions">
+      <a href="${slot.mapsLink || '#'}" target="_blank" rel="noopener noreferrer"
+        class="btn--go" id="go-${dayIdx}-${slotIdx}"
+        aria-label="Portami a ${slot.place || 'questa tappa'}"
+        ${!slot.mapsLink ? 'style="opacity:0.45;pointer-events:none"' : ''}>
+        🧭 Portami Lì
+      </a>
+      <button class="btn--save-slot" type="button" aria-label="Salva tappa"
+        id="save-slot-${dayIdx}-${slotIdx}"
+        onclick="saveSlotDone(${dayIdx},${slotIdx})">✓ Fatto</button>
+      <button class="btn--remove-slot" type="button" aria-label="Rimuovi tappa"
+        onclick="removeSlot(${dayIdx},${slotIdx})">✕ Rimuovi</button>
+    </div>
+  `;
+
+  const timeInput  = item.querySelector('#time-' + day.id + '-' + slotIdx);
+  const placeInput = item.querySelector('#place-input-' + dayIdx + '-' + slotIdx);
+  const mapsInput  = item.querySelector('#maps-input-' + dayIdx + '-' + slotIdx);
+
+  timeInput.addEventListener('change', () => {
+    tripData.days[dayIdx].slots[slotIdx].time = timeInput.value;
+    saveData();
+  });
+
+  placeInput.addEventListener('input', () => {
+    tripData.days[dayIdx].slots[slotIdx].place = placeInput.value;
+    saveData();
+    handlePlaceInput(placeInput, dayIdx, slotIdx);
+  });
+
+  placeInput.addEventListener('keydown', (e) => {
+    const dd = document.getElementById('places-dropdown');
+    if (dd.classList.contains('hidden')) return;
+    const items = dd.querySelectorAll('.place-option');
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[0]?.focus(); }
+    if (e.key === 'Escape') closeDropdown();
+  });
+
+  mapsInput.addEventListener('change', () => {
+    const val = mapsInput.value.trim();
+    tripData.days[dayIdx].slots[slotIdx].mapsLink = val;
+    saveData();
+    updateGoBtn(dayIdx, slotIdx, val, placeInput.value);
+  });
+
+  return item;
+}
+
+// ---- AUTOCOMPLETE ----
+function handlePlaceInput(inputEl, dayIdx, slotIdx) {
+  clearTimeout(searchTimeout);
+  const q = inputEl.value.trim();
+  if (q.length < 2) { closeDropdown(); return; }
+  dropdownDayIdx = dayIdx;
+  dropdownSlotIdx = slotIdx;
+  showDropdownLoading(inputEl);
+  searchTimeout = setTimeout(() => fetchPlaces(q, dayIdx, slotIdx, inputEl), 400);
+}
+
+function showDropdownLoading(inputEl) {
+  const dd = document.getElementById('places-dropdown');
+  dd.innerHTML = '<div class="place-option-loading"><span>⏳</span> Ricerca in corso...</div>';
+  positionDropdown(inputEl);
+  dd.classList.remove('hidden');
+}
+
+function fetchPlaces(query, dayIdx, slotIdx, inputEl) {
+  const city = tripData.city || '';
+  const search = city ? `${query}, ${city}` : query;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(search)}&limit=5&accept-language=it`;
+  fetch(url, { headers: { 'Accept-Language': 'it' } })
+    .then(r => r.json())
+    .then(results => renderDropdown(results, dayIdx, slotIdx, inputEl))
+    .catch(() => renderDropdownOffline(query, dayIdx, slotIdx, inputEl));
+}
+
+function renderDropdown(results, dayIdx, slotIdx, inputEl) {
+  const dd = document.getElementById('places-dropdown');
+  dd.innerHTML = '';
+  if (!results.length) {
+    dd.innerHTML = `<div class="place-option" tabindex="0" role="option"
+      onclick="openMapsSearch('${esc(inputEl.value)}', ${dayIdx}, ${slotIdx})"
+      onkeydown="if(event.key==='Enter')this.click()">
+      <span class="place-option-icon">🗺</span>
+      <div class="place-option-text">
+        <span class="place-option-name">Cerca su Google Maps</span>
+        <span class="place-option-detail">${esc(inputEl.value)}</span>
+      </div></div>`;
+    positionDropdown(inputEl);
+    dd.classList.remove('hidden');
+    return;
+  }
+  results.forEach(place => {
+    const name = place.display_name.split(',')[0];
+    const detail = place.display_name.split(',').slice(1, 3).join(',').trim();
+    const lat = parseFloat(place.lat);
+    const lng = parseFloat(place.lon);
+    const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.display_name)}&ll=${lat},${lng}`;
+    const opt = document.createElement('div');
+    opt.className = 'place-option';
+    opt.setAttribute('role', 'option');
+    opt.setAttribute('tabindex', '0');
+    opt.setAttribute('aria-label', name + '. ' + detail);
+    opt.innerHTML = `<span class="place-option-icon">📍</span>
+      <div class="place-option-text">
+        <span class="place-option-name">${esc(name)}</span>
+        <span class="place-option-detail">${esc(detail)}</span>
+      </div>`;
+    opt.addEventListener('click', () => selectPlace(name, mapsLink, lat, lng, dayIdx, slotIdx, inputEl));
+    opt.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') selectPlace(name, mapsLink, lat, lng, dayIdx, slotIdx, inputEl);
+      if (e.key === 'ArrowDown') opt.nextElementSibling?.focus();
+      if (e.key === 'ArrowUp') opt.previousElementSibling?.focus() || inputEl.focus();
+      if (e.key === 'Escape') { closeDropdown(); inputEl.focus(); }
+    });
+    dd.appendChild(opt);
+  });
+  const mapsOpt = document.createElement('div');
+  mapsOpt.className = 'place-option';
+  mapsOpt.setAttribute('tabindex', '0');
+  mapsOpt.setAttribute('role', 'option');
+  mapsOpt.innerHTML = `<span class="place-option-icon">🗺</span>
+    <div class="place-option-text">
+      <span class="place-option-name">Apri Google Maps per cercare</span>
+      <span class="place-option-detail">${esc(inputEl.value)}</span>
+    </div>`;
+  mapsOpt.addEventListener('click', () => openMapsSearch(inputEl.value, dayIdx, slotIdx));
+  mapsOpt.addEventListener('keydown', (e) => { if (e.key === 'Enter') openMapsSearch(inputEl.value, dayIdx, slotIdx); });
+  dd.appendChild(mapsOpt);
+  positionDropdown(inputEl);
+  dd.classList.remove('hidden');
+}
+
+function renderDropdownOffline(query, dayIdx, slotIdx, inputEl) {
+  const dd = document.getElementById('places-dropdown');
+  dd.innerHTML = `<div class="place-option" tabindex="0" role="option"
+    onclick="openMapsSearch('${esc(query)}', ${dayIdx}, ${slotIdx})"
+    onkeydown="if(event.key==='Enter')this.click()">
+    <span class="place-option-icon">🗺</span>
+    <div class="place-option-text">
+      <span class="place-option-name">Cerca su Google Maps</span>
+      <span class="place-option-detail">${esc(query)}</span>
+    </div></div>`;
+  positionDropdown(inputEl);
+  dd.classList.remove('hidden');
+}
+
+function selectPlace(name, mapsLink, lat, lng, dayIdx, slotIdx, inputEl) {
+  tripData.days[dayIdx].slots[slotIdx].place = name;
+  tripData.days[dayIdx].slots[slotIdx].mapsLink = mapsLink;
+  tripData.days[dayIdx].slots[slotIdx].lat = lat;
+  tripData.days[dayIdx].slots[slotIdx].lng = lng;
+  saveData();
+  inputEl.value = name;
+  const mapsInput = document.getElementById('maps-input-' + dayIdx + '-' + slotIdx);
+  if (mapsInput) mapsInput.value = mapsLink;
+  updateGoBtn(dayIdx, slotIdx, mapsLink, name);
+  closeDropdown();
+  announce(name + ' selezionato');
+}
+
+function openMapsSearch(query, dayIdx, slotIdx) {
+  closeDropdown();
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank', 'noopener,noreferrer');
+  showToast('Copia il link da Maps e incollalo nel campo Link Maps', 'info');
+}
+
+function searchOnMaps(dayIdx, slotIdx) {
+  const placeInput = document.getElementById('place-input-' + dayIdx + '-' + slotIdx);
+  const q = placeInput?.value?.trim() || '';
+  if (!q) { showToast('Scrivi prima un luogo', 'error'); return; }
+  openMapsSearch(q, dayIdx, slotIdx);
+}
+
+function positionDropdown(inputEl) {
+  const dd = document.getElementById('places-dropdown');
+  const rect = inputEl.getBoundingClientRect();
+  dd.style.left = rect.left + 'px';
+  dd.style.top  = (rect.bottom + window.scrollY + 4) + 'px';
+  dd.style.width = Math.max(rect.width, 280) + 'px';
+}
+
+function closeDropdown() {
+  const dd = document.getElementById('places-dropdown');
+  if (dd) { dd.classList.add('hidden'); dd.innerHTML = ''; }
+}
+
+function updateGoBtn(dayIdx, slotIdx, mapsLink, placeName) {
+  const btn = document.getElementById('go-' + dayIdx + '-' + slotIdx);
+  if (!btn) return;
+  if (mapsLink) {
+    btn.href = mapsLink;
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = '';
+    btn.setAttribute('aria-label', 'Portami a ' + placeName);
+  } else {
+    btn.href = '#';
+    btn.style.opacity = '0.45';
+    btn.style.pointerEvents = 'none';
+  }
+}
+
+// ---- GESTIONE SLOT ----
+function addSlot(dayIdx) {
+  if (!tripData.days[dayIdx].slots) tripData.days[dayIdx].slots = [];
+  tripData.days[dayIdx].slots.push({ time: '', place: '', mapsLink: '' });
+  saveData();
+  const day = tripData.days[dayIdx];
+  const si = day.slots.length - 1;
+  const list = document.getElementById('slots-' + day.id);
+  if (list) {
+    const el = createSlotItem(day, dayIdx, day.slots[si], si);
+    list.appendChild(el);
+    setTimeout(() => el.querySelector('[type="time"]')?.focus(), 60);
+  }
+  announce('Tappa aggiunta');
+}
+
+function removeSlot(dayIdx, slotIdx) {
+  tripData.days[dayIdx].slots.splice(slotIdx, 1);
+  saveData();
+  const day = tripData.days[dayIdx];
+  const list = document.getElementById('slots-' + day.id);
+  if (list) {
+    list.innerHTML = '';
+    day.slots.forEach((s, si) => list.appendChild(createSlotItem(day, dayIdx, s, si)));
+  }
+  announce('Tappa rimossa');
+}
+
+function saveSlotDone(dayIdx, slotIdx) {
+  const day = tripData.days[dayIdx];
+  const timeInput  = document.getElementById('time-' + day.id + '-' + slotIdx);
+  const placeInput = document.getElementById('place-input-' + dayIdx + '-' + slotIdx);
+  const mapsInput  = document.getElementById('maps-input-' + dayIdx + '-' + slotIdx);
+  if (timeInput)  tripData.days[dayIdx].slots[slotIdx].time     = timeInput.value;
+  if (placeInput) tripData.days[dayIdx].slots[slotIdx].place    = placeInput.value;
+  if (mapsInput)  tripData.days[dayIdx].slots[slotIdx].mapsLink = mapsInput.value;
+  saveData();
+  const item = document.getElementById('slot-' + day.id + '-' + slotIdx);
+  if (item) {
+    item.classList.add('slot-saved');
+    const btn = document.getElementById('save-slot-' + dayIdx + '-' + slotIdx);
+    if (btn) { btn.textContent = '✏️ Modifica'; btn.onclick = () => editSlot(dayIdx, slotIdx); }
+  }
+  showToast('Tappa salvata ✓', 'success');
+  announce('Tappa salvata');
+}
+
+function editSlot(dayIdx, slotIdx) {
+  const day = tripData.days[dayIdx];
+  const item = document.getElementById('slot-' + day.id + '-' + slotIdx);
+  if (item) {
+    item.classList.remove('slot-saved');
+    const btn = document.getElementById('save-slot-' + dayIdx + '-' + slotIdx);
+    if (btn) { btn.textContent = '✓ Fatto'; btn.onclick = () => saveSlotDone(dayIdx, slotIdx); }
+  }
+  announce('Tappa in modifica');
+}
+
+// ---- TASCA BIGLIETTI GIORNALIERI ----
+function createDayTicketPocket(day, dayIdx) {
+  const pocket = document.createElement('div');
+  pocket.className = 'ticket-pocket';
+  pocket.innerHTML = `
+    <div class="ticket-pocket-title"><span aria-hidden="true">🎟</span> Biglietti del giorno</div>
+    <div class="pocket-upload-zone" role="button" tabindex="0"
+      aria-label="Carica biglietti del giorno ${dayIdx+1}" id="day-zone-${day.id}">
+      <span aria-hidden="true">📎</span>
+      <span>Carica biglietto PDF</span>
+      <span class="upload-hint">Solo PDF</span>
+    </div>
+    <input type="file" id="day-input-${day.id}" accept=".pdf" class="hidden" aria-label="File biglietti giorno ${dayIdx+1}" />
+    <div class="tickets-list" id="day-tickets-${day.id}" aria-live="polite"></div>
+  `;
+  const zone = pocket.querySelector('#day-zone-' + day.id);
+  const inp  = pocket.querySelector('#day-input-' + day.id);
+  zone.addEventListener('click', () => inp.click());
+  zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') inp.click(); });
+  inp.addEventListener('change', e => handleDayFile(e, dayIdx));
+
+  const list = pocket.querySelector('#day-tickets-' + day.id);
+  (day.tickets || []).forEach((t, ti) => list.appendChild(createTicketItem(t, ti, 'day', dayIdx)));
+  if ((day.tickets || []).length > 0) {
+    zone.classList.add('hidden');
+    ensureDayAddMoreBtn(day, dayIdx, inp, list);
+  }
+  return pocket;
+}
+
+// ---- UPLOAD FILE ----
+function readFile(file, cb) {
+  const reader = new FileReader();
+  reader.onload = e => cb({ name: file.name, type: file.type, data: e.target.result });
+  reader.onerror = () => showToast('Errore lettura file', 'error');
+  reader.readAsDataURL(file);
+}
+
+function handleGlobalFileUpload(event) {
+  Array.from(event.target.files).forEach(file => readFile(file, ticket => {
+    if (!tripData.globalTickets) tripData.globalTickets = [];
+    tripData.globalTickets.push(ticket);
+    saveData();
+    renderGlobalTickets();
+    showToast(file.name + ' caricato ✓', 'success');
+  }));
+  event.target.value = '';
+}
+
+function handleDayFile(event, dayIdx) {
+  Array.from(event.target.files).forEach(file => readFile(file, ticket => {
+    if (!tripData.days[dayIdx].tickets) tripData.days[dayIdx].tickets = [];
+    tripData.days[dayIdx].tickets.push(ticket);
+    saveData();
+    const day = tripData.days[dayIdx];
+    const list = document.getElementById('day-tickets-' + day.id);
+    const ti = tripData.days[dayIdx].tickets.length - 1;
+    if (list) list.appendChild(createTicketItem(ticket, ti, 'day', dayIdx));
+    const zone = document.getElementById('day-zone-' + day.id);
+    const inp  = document.getElementById('day-input-' + day.id);
+    if (zone) zone.classList.add('hidden');
+    ensureDayAddMoreBtn(day, dayIdx, inp, list);
+    showToast(file.name + ' caricato ✓', 'success');
+  }));
+  event.target.value = '';
+}
+
+function ensureDayAddMoreBtn(day, dayIdx, inp, list) {
+  if (!list || !inp) return;
+  const btnId = 'day-add-more-' + day.id;
+  if (!document.getElementById(btnId)) {
+    const addBtn = document.createElement('button');
+    addBtn.id = btnId;
+    addBtn.className = 'btn--add-slot';
+    addBtn.style.marginTop = '0.75rem';
+    addBtn.textContent = '+ Aggiungi biglietto';
+    addBtn.addEventListener('click', () => inp.click());
+    list.after(addBtn);
+  }
+}
+
+function renderGlobalTickets() {
+  const list = document.getElementById('global-tickets-list');
+  if (!list) return;
+  list.innerHTML = '';
+  (tripData.globalTickets || []).forEach((t, i) => list.appendChild(createTicketItem(t, i, 'global')));
+  const zone = document.getElementById('global-upload-zone');
+  const inp  = document.getElementById('global-file-input');
+  const oldBtn = document.getElementById('global-add-more-btn');
+  if (oldBtn) oldBtn.remove();
+  if ((tripData.globalTickets || []).length > 0) {
+    if (zone) zone.classList.add('hidden');
+    if (inp) {
+      const addBtn = document.createElement('button');
+      addBtn.id = 'global-add-more-btn';
+      addBtn.className = 'btn--add-slot';
+      addBtn.style.marginTop = '0.75rem';
+      addBtn.textContent = '+ Aggiungi biglietto';
+      addBtn.addEventListener('click', () => inp.click());
+      list.after(addBtn);
+    }
+  } else {
+    if (zone) zone.classList.remove('hidden');
+    if (inp) inp.value = '';
+  }
+}
+
+function createTicketItem(ticket, idx, scope, dayIdx) {
+  const item = document.createElement('div');
+  item.className = 'ticket-item';
+  item.innerHTML = `
+    <span class="ticket-icon">📄</span>
+    <span class="ticket-name">${esc(ticket.name)}</span>
+    <button class="ticket-view-btn" aria-label="Visualizza ${esc(ticket.name)}">Apri</button>
+    <button class="ticket-delete-btn" aria-label="Elimina ${esc(ticket.name)}">🗑</button>
+  `;
+  item.querySelector('.ticket-view-btn').addEventListener('click', () => openViewerFromTicket(ticket));
+  item.querySelector('.ticket-delete-btn').addEventListener('click', () => deleteTicket(scope, idx, dayIdx));
+  return item;
+}
+
+function deleteTicket(scope, idx, dayIdx) {
+  if (scope === 'global') {
+    tripData.globalTickets.splice(idx, 1);
+    saveData(); renderGlobalTickets();
+  } else if (scope === 'day') {
+    tripData.days[dayIdx].tickets.splice(idx, 1);
+    saveData();
+    const day = tripData.days[dayIdx];
+    const list = document.getElementById('day-tickets-' + day.id);
+    if (list) { list.innerHTML = ''; day.tickets.forEach((t,ti) => list.appendChild(createTicketItem(t,ti,'day',dayIdx))); }
+    const zone   = document.getElementById('day-zone-' + day.id);
+    const inp    = document.getElementById('day-input-' + day.id);
+    const addBtn = document.getElementById('day-add-more-' + day.id);
+    if (day.tickets.length === 0) {
+      if (zone) zone.classList.remove('hidden');
+      if (inp) inp.value = '';
+      if (addBtn) addBtn.remove();
+    } else {
+      if (zone) zone.classList.add('hidden');
+      if (list && inp && !document.getElementById('day-add-more-' + day.id)) ensureDayAddMoreBtn(day, dayIdx, inp, list);
+    }
+  }
+  showToast('Biglietto eliminato', 'info');
+}
+
+// ---- VIEWER ----
+function openViewerFromTicket(ticket) {
+  if (typeof ticket === 'string') ticket = JSON.parse(ticket);
+  const viewer = document.getElementById('fullscreen-viewer');
+  const content = document.getElementById('viewer-content');
+  content.innerHTML = '';
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  function makeBlobUrl(dataUrl, mimeType) {
+    try {
+      const b64 = dataUrl.split(',')[1];
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+    } catch(e) { return null; }
+  }
+
+  const blobUrl = makeBlobUrl(ticket.data, 'application/pdf');
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1.5rem;width:100%;max-width:720px;margin:0 auto;';
+
+  const icon = document.createElement('div');
+  icon.style.cssText = 'font-size:3.5rem;';
+  icon.textContent = '📄';
+
+  const name = document.createElement('div');
+  name.style.cssText = 'color:#fff;font-size:1.2rem;font-weight:700;text-align:center;max-width:90%;word-break:break-all;';
+  name.textContent = ticket.name;
+
+  wrap.appendChild(icon);
+  wrap.appendChild(name);
+
+  if (blobUrl) {
+    if (!isIOS) {
+      const iframe = document.createElement('iframe');
+      iframe.src = blobUrl;
+      iframe.style.cssText = 'width:100%;height:60vh;border:none;border-radius:0.75rem;background:#fff;';
+      iframe.title = ticket.name;
+      wrap.appendChild(iframe);
+    }
+
+    const openBtn = document.createElement('button');
+    openBtn.style.cssText = 'background:#e8a900;color:#1a1a2e;padding:1rem 2.5rem;border-radius:1rem;font-size:1.375rem;font-weight:900;border:none;cursor:pointer;width:100%;max-width:320px;';
+    openBtn.textContent = isIOS ? '📂 Apri PDF in Safari' : '⬇ Scarica PDF';
+    openBtn.addEventListener('click', () => {
+      if (isIOS) {
+        window.open(blobUrl, '_blank');
+        showToast('In Safari: premi 📤 → Salva nel file', 'info');
+      } else {
+        const a = document.createElement('a');
+        a.href = ticket.data;
+        a.download = ticket.name;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 200);
+        showToast('Download avviato ✓', 'success');
+      }
+    });
+    wrap.appendChild(openBtn);
+
+    if (isIOS) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'color:#999;font-size:0.85rem;text-align:center;max-width:280px;line-height:1.5;';
+      hint.textContent = 'Il PDF si aprirà in Safari. Usa il tasto Condividi 📤 → Salva nel file per scaricarlo.';
+      wrap.appendChild(hint);
+    }
+  } else {
+    const err = document.createElement('div');
+    err.style.cssText = 'color:#f87171;font-size:1.1rem;text-align:center;padding:1rem;';
+    err.textContent = '⚠️ Impossibile aprire il file. Riprova.';
+    wrap.appendChild(err);
+  }
+
+  content.appendChild(wrap);
+  viewer.classList.remove('hidden');
+  viewer.querySelector('.viewer-close').focus();
+  announce('Visualizzatore aperto: ' + ticket.name);
+}
+
+function closeViewer() {
+  document.getElementById('fullscreen-viewer').classList.add('hidden');
+  document.getElementById('viewer-content').innerHTML = '';
+}
+
+// ---- MODALS ----
+function openTicketModal() {
+  document.getElementById('modal-ticket').classList.remove('hidden');
+  announce('Finestra biglietti aperta');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+function openHotel() {
+  const link = tripData.hotelMaps;
+  if (link) { window.open(link, '_blank', 'noopener,noreferrer'); return; }
+  if (tripData.hotelAddress) {
+    window.open('https://maps.google.com/?q=' + encodeURIComponent(tripData.hotelAddress), '_blank', 'noopener,noreferrer');
+    return;
+  }
+  showToast('Configura prima l\'indirizzo dell\'hotel', 'error');
+}
+
+function openAttractions() {
+  const modal = document.getElementById('modal-attractions');
+  modal.classList.remove('hidden');
+  document.getElementById('attractions-loading').classList.remove('hidden');
+  document.getElementById('attractions-content').classList.add('hidden');
+  document.getElementById('attractions-error').classList.add('hidden');
+
+  if (!navigator.geolocation) {
+    document.getElementById('attractions-loading').classList.add('hidden');
+    document.getElementById('attractions-error').classList.remove('hidden');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude.toFixed(5);
+    const lng = pos.coords.longitude.toFixed(5);
+    setText('attractions-location', '📍 Posizione: ' + lat + ', ' + lng);
+    document.getElementById('btn-attractions-maps').href =
+      `https://www.google.com/maps/search/attrazioni+turistiche/@${lat},${lng},14z`;
+    document.getElementById('attractions-loading').classList.add('hidden');
+    document.getElementById('attractions-content').classList.remove('hidden');
+  }, () => {
+    document.getElementById('attractions-loading').classList.add('hidden');
+    document.getElementById('attractions-error').classList.remove('hidden');
+  }, { timeout: 10000 });
+}
+
+// ---- RESET ----
+function resetTrip() {
+  if (!confirm('Sei sicuro? Tutti i dati del viaggio saranno cancellati.')) return;
+  localStorage.removeItem('travelAssist_v2');
+  tripData = {
+    city:'', departureDate:'', departureTime:'', returnDate:'', returnTime:'',
+    transport:'', hotelAddress:'', hotelMaps:'', days:[], globalTickets:[],
+    transportTickets:{ andata:null, ritorno:null }
+  };
+  showSection('setup');
+  announce('Viaggio resettato');
+}
+
+// ---- TOAST ----
+function createToastContainer() {
+  if (!document.querySelector('.toast-container')) {
+    const c = document.createElement('div');
+    c.className = 'toast-container';
+    document.body.appendChild(c);
+  }
+}
+function showToast(msg, type = 'info') {
+  const c = document.querySelector('.toast-container');
+  if (!c) return;
+  const t = document.createElement('div');
+  t.className = `toast toast--${type}`; t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// ---- SCREEN READER ----
+function announce(msg) {
+  const el = document.getElementById('sr-announce');
+  if (!el) return;
+  el.textContent = ''; setTimeout(() => el.textContent = msg, 50);
+}
+
+// ---- ESCAPE HTML ----
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- ESC KEY ----
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal:not(.hidden)').forEach(m => m.classList.add('hidden'));
+    if (!document.getElementById('fullscreen-viewer').classList.contains('hidden')) closeViewer();
+    closeDropdown();
+  }
+});
+
+// ---- SERVICE WORKER INLINE ----
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'travel-assist-v1';
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./'])).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+    const clone = res.clone();
+    caches.open(CACHE).then(c => c.put(e.request, clone));
+    return res;
+  }).catch(() => caches.match('./'))));
+});
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+</body>
+</html>
