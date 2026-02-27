@@ -268,7 +268,13 @@
     .slot-row { display: grid; grid-template-columns: 8rem 1fr; gap: 0.75rem; align-items: start; }
     .slot-time { min-width: 0; }
     .slot-time .slot-input { font-size: var(--text-sm); text-align: center; padding: 0.75rem 0.25rem; }
-    .slot-maps-row { display: flex; flex-direction: column; gap: 0.5rem; }
+    .maps-hint {
+      font-size: var(--text-xs); color: var(--text-muted);
+      background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.2);
+      border-radius: var(--radius-sm); padding: 0.6rem 0.75rem;
+      line-height: 1.5;
+    }
+    .maps-hint strong { color: var(--text-secondary); }
     .slot-actions-maps { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .btn--maps-search { background: var(--accent-secondary); color: #fff; border: none; border-radius: var(--radius-sm); min-height: 3rem; padding: 0.625rem 0.75rem; font-family: inherit; font-size: var(--text-xs); font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
     .btn--maps-search:hover { background: #0284c7; }
@@ -718,7 +724,10 @@ function addDay() {
 
 function formatDate(s) {
   if (!s) return '—';
-  return new Date(s + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' });
+  const d = new Date(s + 'T00:00:00');
+  const giorni = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+  const mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+  return `${giorni[d.getDay()]} ${d.getDate()} ${mesi[d.getMonth()]}`;
 }
 function isToday(s) { return s === new Date().toISOString().split('T')[0]; }
 
@@ -904,6 +913,10 @@ function createSlotItem(day, dayIdx, slot, slotIdx) {
         onclick="searchOnMaps(${dayIdx},${slotIdx})">🔍 Cerca su Maps</button>
       <button class="btn--maps-paste" type="button" aria-label="Incolla link dagli appunti"
         onclick="pasteMapLink(${dayIdx},${slotIdx})">📋 Incolla link</button>
+    </div>
+    <div class="maps-hint">
+      💡 Cerca su Maps → tocca il nome del posto → 
+      <strong>Condividi ↑ → Copia link</strong> → torna qui → Incolla link
     </div>
     <div class="slot-actions">
       <a href="${slot.mapsLink || '#'}" target="_blank" rel="noopener noreferrer"
